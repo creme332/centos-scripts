@@ -41,5 +41,23 @@ yum makecache
 # Update system
 yum update
 
+# Add Google's DNS servers to resolv.conf
+RESOLV_CONF="/etc/resolv.conf"
+
+GOOGLE_DNS1="nameserver 8.8.8.8"
+GOOGLE_DNS2="nameserver 8.8.4.4"
+
+# Backup existing resolv.conf
+cp $RESOLV_CONF ${RESOLV_CONF}.backup.$(date +%F-%T)
+
+# Add Google's DNS servers if not already present
+if ! grep -q "$GOOGLE_DNS1" $RESOLV_CONF; then
+    echo "$GOOGLE_DNS1" >> $RESOLV_CONF
+fi
+
+if ! grep -q "$GOOGLE_DNS2" $RESOLV_CONF; then
+    echo "$GOOGLE_DNS2" >> $RESOLV_CONF
+fi
+
 # Inform the user of the change
 echo "Setup complete"
