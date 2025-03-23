@@ -11,6 +11,7 @@
 # - CentOS 7 with sudo privileges
 # - Internet connectivity for package installation
 # - Network interface 'ens33' should be present
+# - Packages: net-tools, firewalld
 #--------------------------------------------------------------
 # Features:
 # - Sets up hostname and updates /etc/hosts
@@ -18,7 +19,7 @@
 # - Configures Postfix for SMTP with SSL encryption
 # - Configures Dovecot for POP3/IMAP
 # - Opens necessary firewall ports
-# - Creates a test user for mail access
+# - Creates virtual users for mail access
 #--------------------------------------------------------------
 
 # Function to check if a package is installed
@@ -119,6 +120,7 @@ openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
 
 # Step 5: Update Postfix main configuration
 cat <<EOL >> /etc/postfix/main.cf
+
 myhostname = $SERVER_FQN
 mydomain = $DOMAIN_NAME
 myorigin = \$mydomain
@@ -204,9 +206,12 @@ firewall-cmd --permanent --add-port=143/tcp
 firewall-cmd --permanent --add-service=imaps
 firewall-cmd --reload
 
-# Step 15: Create a virtual user with name and password set to john
-echo "Creating user john for testing..."
+# Step 15: Create virtual users
+echo "Creating users john and tom for testing..."
 useradd -m john -s /sbin/nologin
 echo "john" | passwd --stdin john
+
+useradd -m tom -s /sbin/nologin
+echo "tom" | passwd --stdin tom
 
 echo "Mail server setup complete."
