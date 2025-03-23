@@ -1,5 +1,16 @@
 #!/bin/bash
 
+#--------------------------------------------------------------
+# Script Name: Setup Yum on CentOS 7
+# Description: Updates repository urls so that Yum can keep functioning
+#              despite CentOS being discontinued.
+# Version: 0.0
+#--------------------------------------------------------------
+# Requirements:
+# - CentOS 7 with sudo privileges
+# - Internet connectivity for package installation
+#--------------------------------------------------------------
+
 # Backup the original CentOS-Base.repo file before modifying
 cp /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
 
