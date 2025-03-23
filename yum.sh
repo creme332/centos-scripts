@@ -5,6 +5,7 @@
 # Description: Updates repository urls so that Yum can keep functioning
 #              despite CentOS being discontinued.
 # Version: 0.0
+# Author: creme332
 #--------------------------------------------------------------
 # Requirements:
 # - CentOS 7 with sudo privileges

@@ -5,7 +5,7 @@
 # Description: Automates the installation and configuration of  
 #              a mail server using Postfix and Dovecot on CentOS 7.
 # Version: 0.1
-# Date: 2025-03-18
+# Author: creme332
 #--------------------------------------------------------------
 # Requirements:
 # - CentOS 7 with sudo privileges
