@@ -71,5 +71,8 @@ if ! grep -q "$GOOGLE_DNS2" $RESOLV_CONF; then
     echo "$GOOGLE_DNS2" >> $RESOLV_CONF
 fi
 
+# Install net-tools
+yum install -y net-tools
+
 # Inform the user of the change
 echo "Setup complete"
