@@ -4,7 +4,7 @@
 # Script Name: Setup Yum on CentOS 7
 # Description: Updates repository urls so that Yum can keep functioning
 #              despite CentOS being discontinued.
-# Version: 0.0
+# Version: 0.1
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -51,7 +51,7 @@ yum clean all
 yum makecache
 
 # Update system
-yum update
+yum update -y
 
 # Add Google's DNS servers to resolv.conf
 RESOLV_CONF="/etc/resolv.conf"
