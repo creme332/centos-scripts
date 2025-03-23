@@ -48,7 +48,7 @@ DOMAIN_NAME="csft.mu"
 SERVER_FQN="$SERVER_NAME.$DOMAIN_NAME"
 
 # Set mail server's IP address to machine's IP address
-IP_ADDRESS="$(ip addr show ens33 | awk '/inet / {print $2}' | cut -d'/' -f1)"
+IP_ADDRESS="$(ifconfig ens33 | awk '/inet / {print $2}' | cut -d'/' -f1)"
 
 # Step 1 & 2: Set hostname and update hosts file
 
