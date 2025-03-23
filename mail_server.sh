@@ -51,6 +51,7 @@ SERVER_FQN="$SERVER_NAME.$DOMAIN_NAME"
 IP_ADDRESS="$(ifconfig ens33 | awk '/inet / {print $2}' | cut -d'/' -f1)"
 
 # Step 1 & 2: Set hostname and update hosts file
+hostnamectl set-hostname "$SERVER_FQN"
 
 # Check if the entry already exists in /etc/hosts
 if grep -q "$IP_ADDRESS $SERVER_FQN" /etc/hosts; then
@@ -101,7 +102,7 @@ localityName                = Reduit
 organizationName            = UOM
 organizationalUnitName      = FOICDT
 commonName                  = mail.csft.mu
-emailAddress                = admin@csft.com
+emailAddress                = root@csft.com
 
 [ v3_req ]
 
