@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#--------------------------------------------------------------
+# Script Name: Backup Mail Server Configurations on CentOS 7
+# Description: Creates a backup of Postfix and Dovecot configuration files.
+# Version: 0.0
+#--------------------------------------------------------------
+# Requirements:
+# - CentOS 7 with sudo privileges
+#--------------------------------------------------------------
+
 # Define backup directory
 BACKUP_DIR="/var/backups/mail_server"
 DATE=$(date +"%Y%m%d%H%M")
