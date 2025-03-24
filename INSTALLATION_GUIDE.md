@@ -1,11 +1,23 @@
-# CLI Mailing
+# Logging ✅
+
+On CentOS, `rsyslog` is responsible for logging system messages, including mail logs. If it’s not running or misconfigured, your mail logs may not be written to disk.
+
+```bash
+yum install -y rsyslog
+sudo systemctl start rsyslog
+sudo systemctl enable rsyslog
+```
+
+Dovecot errors are also present in ~/.dovecot.sieve.log
+
+# CLI Mailing ✅
 
 ```bash
 yum install -y mailx
 echo "This is a test email body" | mail -s "Mailx" john@csft.mu
 ```
 
-# GUI for Mailing
+# GUI Mailing ✅
 
 To setup an email account in Thunderbird, you must use the password for a previously created virtual user on the mail server. E.g. email = `john@csft.mu` and password = `john`. Do not use Thunderbird's manual configuration.
 
@@ -305,8 +317,102 @@ Add a daily scan job:
 This runs a scan every night at 2 AM and logs results.
 
 
-# Auto-reply
+# Auto-Reply ✅
+
+Install package:
 
 ```bash
 yum install dovecot-pigeonhole -y
 ```
+
+Edit `/etc/dovecot/conf.d/15-lda.conf` to ensure `sieve` is included in `mail_plugins`:
+
+```
+protocol lda {
+  mail_plugins = $mail_plugins sieve
+}
+```
+
+Edit `/etc/dovecot/conf.d/90-sieve.conf` to ensure it contains the following settings:
+
+```
+plugin {
+  sieve =  ~/.dovecot.sieve
+  sieve_dir = ~/sieve/
+  sieve_vacation_use_original_recipient = yes
+}
+```
+
+Edit `/etc/dovecot/conf.d/90-plugin.conf` to ensure it contains the following settings:
+
+```
+plugin {
+    sieve_plugins = sieve_extprograms
+    sieve = ~/.dovecot.sieve
+    sieve_dir = ~/sieve
+}
+```
+
+Edit `/etc/postfix/main.cf` to ensure the following setting is present:
+
+```
+mailbox_command = /usr/libexec/dovecot/deliver
+```
+
+Restart services:
+
+```
+systemctl restart dovecot postfix
+```
+
+## Create Auto-Responder Script
+
+To create an auto-responder for an existing user `john`:
+
+```bash
+cd /home/john
+mkdir -p sieve
+cat <<EOL > sieve/vacation.sieve
+require ["fileinto", "vacation"];
+
+vacation :days 1 :addresses ["john@csft.mu"] :subject "Out of Office" "I am currently out of the office.";
+                           
+EOL
+sievec sieve/vacation.sieve
+ln -s sieve/vacation.sieve .dovecot.sieve
+chown -R john:john /home/john/sieve
+chmod -R 700 /home/john/sieve
+chmod 600 /home/john/sieve/vacation.sieve
+```
+
+To check if auto-reply is working send an email to `john@csft.mu` from another account. You should receive an auto-reply. The reply is sent only once in the number of configured days. 
+
+## How it Works
+
+1. When a new email arrives, Dovecot looks for `~/.dovecot.sieve`.
+2. If `~/.dovecot.sieve` is a symlink, it follows the link to a script inside `~/.sieve/`.
+3. The active script is executed, processing the email based on the Sieve rules.
+
+## Debugging
+
+Check mail logs:
+
+```bash
+cat /var/log/maillog
+```
+
+Run the following command to list users recognized by Dovecot:
+
+```
+doveadm user '*'
+```
+
+Check if vacation is active for john:
+
+```bash
+doveadm sieve list -u john
+```
+
+List of autoreplied senders is stored in `.dovecot.lda-dupes` file in user's home directory.
+
+When you're testing the vacation feature, it's easy to forget that the reply is sent only once in the number of configured days. If you have problems getting the vacation reply, try deleting this file. If that didn't help, make sure the problem isn't related to sending mails in general by trying the "reject" Sieve command.
