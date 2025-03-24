@@ -72,7 +72,10 @@ if ! grep -q "$GOOGLE_DNS2" $RESOLV_CONF; then
 fi
 
 # Install essential packages
-yum install -y epel-release net-tools firewalld
+yum install -y epel-release net-tools firewalld rsyslog
+
+systemctl enable rsyslog
+systemctl start rsyslog
 
 # Inform the user of the change
 echo "Setup complete"
