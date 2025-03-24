@@ -72,7 +72,7 @@ if ! grep -q "$GOOGLE_DNS2" $RESOLV_CONF; then
 fi
 
 # Install essential packages
-yum install -y net-tools firewalld
+yum install -y epel-release net-tools firewalld
 
 # Inform the user of the change
 echo "Setup complete"
