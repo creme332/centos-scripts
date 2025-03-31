@@ -8,7 +8,7 @@ sudo systemctl start rsyslog
 sudo systemctl enable rsyslog
 ```
 
-Dovecot errors are also present in ~/.dovecot.sieve.log
+Dovecot errors are also present in `~/.dovecot.sieve.log`
 
 # CLI Mailing ✅
 
@@ -18,6 +18,61 @@ echo "This is a test email body" | mail -s "Mailx" john@csft.mu
 ```
 
 # GUI Mailing ✅
+
+## Squirrelmail
+
+```bash
+yum install -y epel-release policycoreutils squirrelmail
+```
+
+Allow Apache port 80 in firewall:
+
+```bash
+firewall-cmd --permanent --add-port=80/tcp
+firewall-cmd --reload
+```
+
+```bash
+cd /usr/share/squirrelmail/config
+./conf.pl
+```
+
+1. Select Option 2 (Server Settings) and change domain from `localhost` to `csft.mu`.
+2. Change the `Sendmail or SMTP` setting to use SMTP instead of SendMail.
+3. Save data and quit.
+
+Save and quit.
+
+Add the following at the end of `/etc/httpd/conf/httpd.conf`:
+
+```
+Alias /webmail /usr/share/squirrelmail
+
+<Directory /usr/share/squirrelmail>
+    Options Indexes FollowSymLinks
+    RewriteEngine On
+    AllowOverride All
+    DirectoryIndex index.php
+    Order allow,deny
+    Allow from all
+</Directory>
+```
+
+Run the following command:
+
+```bash
+setsebool httpd_can_network_connect=1
+```
+
+Restart Apache:
+
+```bash
+service httpd restart
+```
+
+Visit `http://mail.csft.mu/webmail` and login using `john` as username (not `john@csft.mu`).
+
+## Thunderbird
 
 To setup an email account in Thunderbird, you must use the password for a previously created virtual user on the mail server. E.g. email = `john@csft.mu` and password = `john`. Do not use Thunderbird's manual configuration.
 
@@ -347,7 +402,6 @@ Edit `/etc/dovecot/conf.d/90-plugin.conf` to ensure it contains the following se
 
 ```
 plugin {
-    sieve_plugins = sieve_extprograms
     sieve = ~/.dovecot.sieve
     sieve_dir = ~/sieve
 }
@@ -373,7 +427,7 @@ To create an auto-responder for an existing user `john`:
 cd /home/john
 mkdir -p sieve
 cat <<EOL > sieve/vacation.sieve
-require ["fileinto", "vacation"];
+require ["vacation"];
 
 vacation :days 1 :addresses ["john@csft.mu"] :subject "Out of Office" "I am currently out of the office.";
                            
@@ -403,7 +457,7 @@ cat /var/log/maillog
 
 Run the following command to list users recognized by Dovecot:
 
-```
+```bash
 doveadm user '*'
 ```
 
