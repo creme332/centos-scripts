@@ -3,7 +3,7 @@
 #--------------------------------------------------------------
 # Script Name: Backup Mail Server Configurations on CentOS 7
 # Description: Creates a backup of Postfix and Dovecot configuration files.
-# Version: 0.0
+# Version: 0.1
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -25,7 +25,11 @@ FILES=(
     "/etc/dovecot/conf.d/10-master.conf"
     "/etc/dovecot/conf.d/10-auth.conf"
     "/etc/dovecot/conf.d/10-mail.conf"
-    "/etc/dovecot/conf.d/20-pop3.conf"
+    "/etc/dovecot/conf.d/20-pop3.conf",
+    "/etc/sysconfig/spamass-milter",
+    "/etc/dovecot/conf.d/15-lda.conf",
+    "/etc/dovecot/conf.d/20-lmtp.conf",
+    "/etc/dovecot/conf.d/90-sieve.conf",
 )
 
 # Loop through the files and copy them to the backup directory with a timestamp
