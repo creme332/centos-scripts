@@ -182,7 +182,7 @@ Edit `/etc/sysconfig/spamass-milter` as follows:
 
 ```diff
 - #EXTRA_FLAGS="-m -r 15"
-+ EXTRA_FLAGS="-m -r 8 -g sa-milt"
++ EXTRA_FLAGS="-m -g sa-milt"
 ```
 
 Add postfix user to the sa-milt group, so that Postfix will be able to communicate with spamass-milter:
