@@ -146,7 +146,7 @@ cat /var/log/email_backup.log
 To unarchive and extract:
 
 ```bash
-tar -xvfz archive.tar.gz
+tar -xvzf archive.tar.gz
 ```
 
 # Spam Detection ✅
