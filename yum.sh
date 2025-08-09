@@ -3,8 +3,9 @@
 #--------------------------------------------------------------
 # Script Name: Setup Yum on CentOS 7
 # Description: Updates repository urls so that Yum can keep functioning
-#              despite CentOS being discontinued.
-# Version: 0.1
+#              despite CentOS being discontinued. You can run the script
+#              using bash yum.sh
+# Version: 0.2
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -12,8 +13,16 @@
 # - Internet connectivity for package installation
 #--------------------------------------------------------------
 
+# Ping Google DNS with a timeout of 3 seconds, only 1 packet
+if ping -c 1 -W 3 8.8.8.8 > /dev/null 2>&1; then
+    echo "Internet is available."
+else
+    echo "No internet connection. Exiting."
+    exit 1
+fi
+
 # Backup the original CentOS-Base.repo file before modifying
-cp /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
+cp /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup.$(date +%F-%T)
 
 # Write the new content to CentOS-Base.repo
 cat <<EOL > /etc/yum.repos.d/CentOS-Base.repo
@@ -50,9 +59,6 @@ EOL
 yum clean all
 yum makecache
 
-# Update system
-yum update -y
-
 # Add Google's DNS servers to resolv.conf
 RESOLV_CONF="/etc/resolv.conf"
 
@@ -71,11 +77,23 @@ if ! grep -q "$GOOGLE_DNS2" $RESOLV_CONF; then
     echo "$GOOGLE_DNS2" >> $RESOLV_CONF
 fi
 
-# Install essential packages
-yum install -y epel-release net-tools firewalld rsyslog
+# Ask use whether to install additional packages
+read -p "Do you want wait a long time to update the system and install additional packages? (y/n): " answer
 
-systemctl enable rsyslog
-systemctl start rsyslog
+if [[ "$answer" =~ ^[Yy]$ ]]; then
+    echo "Updating system..."
+    yum update -y
+
+    echo "Installing essential packages..."
+    yum install -y epel-release net-tools firewalld rsyslog
+
+    echo "Enabling and starting rsyslog service..."
+    systemctl enable rsyslog
+    systemctl start rsyslog
+else
+    echo "Skipping system update and package installation."
+fi
+
 
 # Inform the user of the change
-echo "Setup complete"
+echo "Setup complete. Verify $RESOLV_CONF and /etc/yum.repos.d/CentOS-Base.repo."
