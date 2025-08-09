@@ -13,6 +13,12 @@
 # - Internet connectivity for package installation
 #--------------------------------------------------------------
 
+# Ensure that user is logged in as root
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root. Exiting."
+    exit 1
+fi
+
 # Ping Google DNS with a timeout of 3 seconds, only 1 packet
 if ping -c 1 -W 3 8.8.8.8 > /dev/null 2>&1; then
     echo "Internet is available."
