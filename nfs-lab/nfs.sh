@@ -13,7 +13,7 @@ else
 fi
 
 # Get IP address (adjust interface as needed)
-IP_ADDRESS=$(ifconfig ens33 | awk '/inet / {print $2}' | cut -d'/' -f1)
+IP_ADDRESS=$(ip -4 addr show scope global | awk '/inet /{print $2}' | cut -d/ -f1 | head -n 1)
 
 if [ -z "$IP_ADDRESS" ]; then
     echo "Could not determine IP address. Exiting."
