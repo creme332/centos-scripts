@@ -4,7 +4,7 @@
 # Script Name: Setup Mail Server on CentOS 7
 # Description: Automates the installation and configuration of  
 #              a mail server using Postfix and Dovecot on CentOS 7.
-# Version: 0.1
+# Version: 0.2
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -21,6 +21,22 @@
 # - Opens necessary firewall ports
 # - Creates virtual users for mail access
 #--------------------------------------------------------------
+
+set -ex  # Exit on error, print commands
+
+# Ensure that user is logged in as root
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root. Exiting."
+    exit 1
+fi
+
+# Ping Google DNS with a timeout of 3 seconds, only 1 packet
+if ping -c 1 -W 3 8.8.8.8 > /dev/null 2>&1; then
+    echo "Internet is available."
+else
+    echo "No internet connection. Exiting."
+    exit 1
+fi
 
 # Function to check if a package is installed
 is_installed() {
