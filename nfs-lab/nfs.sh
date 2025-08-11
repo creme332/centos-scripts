@@ -6,7 +6,7 @@
 #              same CentOS 7.9 machine. Handles rpcbind socket,
 #              firewall, SELinux settings, and mounts local share.
 #              Suitable for local testing and LAN usage.
-# Usage: Run the script as root using bash nfs_setup.sh
+# Usage: Run the script as root using bash nfs.sh
 # Version: 0.0
 # Author: creme332
 #--------------------------------------------------------------
