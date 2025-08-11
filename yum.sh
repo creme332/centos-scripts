@@ -13,6 +13,8 @@
 # - Internet connectivity for package installation
 #--------------------------------------------------------------
 
+set -ex  # Exit on error, print commands
+
 # Ensure that user is logged in as root
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root. Exiting."
