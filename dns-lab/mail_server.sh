@@ -42,8 +42,20 @@ fi
 if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
     echo "YUM OK"
 else
-    echo "YUM NOT WORKING. Run yum.sh" >&2
-    exit 1
+    echo "Setting up YUM..." >&2
+    curl -fsSL https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/yum.sh -o /tmp/yum.sh && \
+    bash /tmp/yum.sh || {
+        echo "Failed to set up YUM. Exiting."
+        exit 1
+    }
+
+    # Re-check YUM after setup
+    if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+        echo "YUM fixed and working."
+    else
+        echo "YUM setup failed. Exiting."
+        exit 1
+    fi
 fi
 
 # Function to check if a package is installed
