@@ -1,6 +1,19 @@
 #!/bin/bash
-# NFS Server + Client on Same Machine (CentOS 7.9)
-# Uses rpcbind + systemctl, works with SELinux + firewalld enabled
+
+#--------------------------------------------------------------
+# Script Name: Setup NFS Server and Client on CentOS 7.9
+# Description: Installs and configures NFS server and client on the
+#              same CentOS 7.9 machine. Handles rpcbind socket,
+#              firewall, SELinux settings, and mounts local share.
+#              Suitable for local testing and LAN usage.
+# Usage: Run the script as root using bash nfs_setup.sh
+# Version: 0.0
+# Author: creme332
+#--------------------------------------------------------------
+# Requirements:
+# - CentOS 7.9.2009 with root privileges
+# - Internet connectivity for package installation and updates
+#--------------------------------------------------------------
 
 set -ex  # Exit on error, print commands
 
