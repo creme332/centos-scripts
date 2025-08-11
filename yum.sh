@@ -5,11 +5,11 @@
 # Description: Updates repository urls so that Yum can keep functioning
 #              despite CentOS being discontinued. You can run the script
 #              using bash yum.sh
-# Version: 0.2
+# Version: 0.3
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
-# - CentOS 7 with sudo privileges
+# - CentOS:7.9.2009 with sudo privileges
 # - Internet connectivity for package installation
 #--------------------------------------------------------------
 
@@ -91,15 +91,32 @@ if [[ "$answer" =~ ^[Yy]$ ]]; then
     yum update -y
 
     echo "Installing essential packages..."
-    yum install -y epel-release net-tools firewalld rsyslog
-
-    echo "Enabling and starting rsyslog service..."
-    systemctl enable rsyslog
-    systemctl start rsyslog
+    yum install -y epel-release net-tools firewalld
 else
     echo "Skipping system update and package installation."
 fi
 
+# Detect if running in WSL2 and create configuration file
+if grep -qi microsoft /proc/version && grep -qi wsl2 /proc/version; then
+    echo "Detected WSL2."
+
+    yum install -y sudo which policycoreutils
+    cat <<EOL > /etc/wsl.conf
+[boot]
+systemd=true
+
+[network]
+generateHosts = false
+
+[network]
+generateResolvConf = false  
+EOL
+
+    echo "Created $WSL_CONF with WSL2 configuration."
+else
+    echo "Not running in WSL2."
+fi
+
 
 # Inform the user of the change
-echo "Setup complete. Verify $RESOLV_CONF and /etc/yum.repos.d/CentOS-Base.repo."
+echo "Setup complete. Verify $RESOLV_CONF and /etc/yum.repos.d/CentOS-Base.repo"
