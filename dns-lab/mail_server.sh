@@ -38,6 +38,14 @@ else
     exit 1
 fi
 
+# Check if YUM is working
+if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+    echo "YUM OK"
+else
+    echo "YUM NOT WORKING. Run yum.sh" >&2
+    exit 1
+fi
+
 # Function to check if a package is installed
 is_installed() {
     rpm -q "$1" &>/dev/null

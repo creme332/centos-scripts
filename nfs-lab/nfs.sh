@@ -17,6 +17,14 @@
 
 set -ex  # Exit on error, print commands
 
+# Check if YUM is working
+if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+    echo "YUM OK"
+else
+    echo "YUM NOT WORKING. Run yum.sh" >&2
+    exit 1
+fi
+
 # --- Root check ---
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root. Exiting."
