@@ -16,7 +16,18 @@
 
 set -ex  # Exit on error, print commands
 
-# Check if YUM is working
+# Retrieve client IP
+CLIENT_IP="$1"
+
+if [[ -z "$CLIENT_IP" ]]; then
+    read -rp "Enter the client IP address or subnet (e.g., 192.168.1.50 or 192.168.1.0/24): " CLIENT_IP < /dev/tty
+fi
+
+if [[ -z "$CLIENT_IP" ]]; then
+    echo "Client IP cannot be empty. Exiting."
+    exit 1
+fi
+
 # Check if YUM is working
 if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
     echo "YUM OK"
@@ -98,13 +109,6 @@ echo "Using server IP: $SERVER_IP"
 # --- Backup exports ---
 if [[ -f /etc/exports ]]; then
     cp /etc/exports /etc/exports.backup.$(date +%F-%T)
-fi
-
-# --- Prompt for client IP ---
-read -rp "Enter the client IP address or subnet (e.g., 192.168.1.50 or 192.168.1.0/24): " CLIENT_IP
-if [[ -z "$CLIENT_IP" ]]; then
-    echo "Client IP cannot be empty. Exiting."
-    exit 1
 fi
 
 # --- Configure exports ---

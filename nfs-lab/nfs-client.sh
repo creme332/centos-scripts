@@ -15,7 +15,19 @@
 
 set -ex  # Exit on error, print commands
 
-# --- YUM check ---
+# --- Retrieve server IP ---
+SERVER_IP="$1"
+
+# If not provided as argument, try to prompt
+if [[ -z "$SERVER_IP" ]]; then
+    read -rp "Enter the NFS server IP address: " SERVER_IP < /dev/tty
+fi
+
+if [[ -z "$SERVER_IP" ]]; then
+    echo "Server IP cannot be empty. Exiting."
+    exit 1
+fi
+
 # Check if YUM is working
 if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
     echo "YUM OK"
@@ -65,10 +77,6 @@ done
 # --- Enable + start client services ---
 systemctl enable rpcbind nfs-lock nfs-idmap
 systemctl start rpcbind nfs-lock nfs-idmap
-
-# --- Prompt for server details ---
-read -rp "Enter the NFS server IP address: " SERVER_IP
-[[ -z "$SERVER_IP" ]] && { echo "Server IP cannot be empty. Exiting."; exit 1; }
 
 SHARE_DIR="/nfsshare"
 
