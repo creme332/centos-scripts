@@ -18,8 +18,32 @@
     ```
 ## Same machine
 
-To setup an NFS client & server on the **same** machine :
+To setup an NFS client & server on the **same** machine:
 
 ```bash
-curl https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/nfs-lab/nfs.sh | sh
+curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/nfs-lab/nfs.sh | sh
 ```
+
+## Authentication
+
+Assuming you already have a shared directory `/nfsshare` which both server and client can read/write:
+
+1. On server VM, run `protect.sh` to create 2 subfolders within `/nfsshare`:
+   ```bash 
+   curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/nfs-lab/protect.sh | sh
+   ```
+   `/nfsshare/public` is available to any client while `/nfsshare/private` is available only to superusers. 
+2. On both client and server VM, download `create_user.sh`:
+   ```bash
+   wget https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/nfs-lab/create_user.sh
+   ```
+3. On both client and server VM, create a new superuser:
+   ```bash
+   bash create_user.sh alice 3000
+   ```
+   Superuser IDs should be unique across both server and client.
+4. On client VM, create a test user:
+    ```bash
+    useradd john
+    ```
+5. On client VM, alice has access to the `/mnt/nfsshare/private` folder but not john. `/mnt/nfsshare/public` is available to both.
