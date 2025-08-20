@@ -22,7 +22,7 @@
 # - Creates virtual users for mail access
 #--------------------------------------------------------------
 
-set -ex  # Exit on error, print commands
+set -euo pipefail
 
 # Ensure that user is logged in as root
 if [[ $EUID -ne 0 ]]; then

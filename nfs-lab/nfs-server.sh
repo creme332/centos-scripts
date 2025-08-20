@@ -14,7 +14,7 @@
 # - Internet connectivity for package installation and updates
 #--------------------------------------------------------------
 
-set -ex  # Exit on error, print commands
+set -euo pipefail
 
 # Retrieve client IP
 CLIENT_IP="$1"

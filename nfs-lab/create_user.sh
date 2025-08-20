@@ -14,6 +14,8 @@
 # - Must be run with root privileges
 #--------------------------------------------------------------
 
+set -euo pipefail
+
 # Root check
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root. Exiting."

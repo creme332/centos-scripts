@@ -10,6 +10,8 @@
 # - CentOS 7 with sudo privileges
 #--------------------------------------------------------------
 
+set -euo pipefail
+
 # Define backup directory
 BACKUP_DIR="/var/backups/mail_server"
 DATE=$(date +"%Y%m%d%H%M")
