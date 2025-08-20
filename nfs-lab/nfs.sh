@@ -15,7 +15,7 @@
 # - Internet connectivity for package installation and updates
 #--------------------------------------------------------------
 
-set -ex  # Exit on error, print commands
+set -euo pipefail
 
 # Check if YUM is working
 if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then

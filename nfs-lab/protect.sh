@@ -11,6 +11,8 @@
 # - Must be run with root privileges
 #--------------------------------------------------------------
 
+set -euo pipefail
+
 mkdir -p /nfsshare/public
 mkdir -p /nfsshare/private
 

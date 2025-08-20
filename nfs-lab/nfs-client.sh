@@ -13,7 +13,7 @@
 # - Internet connectivity for package installation and updates
 #--------------------------------------------------------------
 
-set -ex  # Exit on error, print commands
+set -euo pipefail
 
 # --- Retrieve server IP ---
 SERVER_IP="$1"

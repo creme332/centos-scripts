@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Loop through all home directories in /home
 for dir in /home/*; do
     if [ -d "$dir" ]; then  # Check if it's a directory
