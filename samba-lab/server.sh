@@ -6,7 +6,7 @@
 #              anonymous and secure shares, firewall rules, and
 #              SELinux context adjustments. Designed to be idempotent,
 #              so it can be run multiple times safely.
-# Version: 0.0
+# Version: 0.1
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -18,7 +18,7 @@
 # Features:
 # - Validates yum availability, root access, and internet connectivity
 # - Installs required Samba packages
-# - Creates backup of original smb.conf if not already backed up
+# - Creates backup of original smb.conf
 # - Adds [Anonymous] and [Secure] shares only if not present
 # - Configures directories with correct ownership and permissions
 # - Sets persistent SELinux file contexts for shares
@@ -52,32 +52,6 @@ fi
 
 # --- Install packages ---
 yum install -y samba samba-client samba-common policycoreutils-python
-
-# --- Backup smb.conf if not already done ---
-if [[ -f /etc/samba/smb.conf && ! -f /etc/samba/smb.conf.backup ]]; then
-    cp /etc/samba/smb.conf /etc/samba/smb.conf.backup
-fi
-
-# --- Add [global] + [Anonymous] share if missing ---
-if ! grep -q "^\[Anonymous\]" /etc/samba/smb.conf; then
-cat <<'EOL' >> /etc/samba/smb.conf
-
-[global]
-workgroup = WORKGROUP
-server string = Samba Server %v
-netbios name = centos
-security = user
-map to guest = bad user
-dns proxy = no
-#========================== Share Definitions ==============================
-[Anonymous]
-path = /samba/anonymous
-browsable = yes
-writable = yes
-guest ok = yes
-read only = no
-EOL
-fi
 
 # --- Create anonymous share directory ---
 mkdir -p /samba/anonymous
@@ -114,9 +88,26 @@ chmod -R 0770 /home/secure/
 semanage fcontext -a -t samba_share_t "/home/secure(/.*)?" 2>/dev/null || true
 restorecon -R /home/secure
 
-# --- Add [Secure] share if missing ---
-if ! grep -q "^\[Secure\]" /etc/samba/smb.conf; then
-cat <<'EOL' >> /etc/samba/smb.conf
+# --- Create a timestamped backup of smb.conf ---
+cp /etc/samba/smb.conf "/etc/samba/smb.conf.backup.$(date +%F-%T)"
+
+# --- Overwrite old config with new config ---
+cat <<EOL > /etc/samba/smb.conf
+
+[global]
+workgroup = WORKGROUP
+server string = Samba Server %v
+netbios name = centos
+security = user
+map to guest = bad user
+dns proxy = no
+#========================== Share Definitions ==============================
+[Anonymous]
+path = /samba/anonymous
+browsable = yes
+writable = yes
+guest ok = yes
+read only = no
 
 [Secure]
 path = /home/secure
@@ -124,8 +115,12 @@ valid users = @smbgrp
 guest ok = no
 writable = yes
 browsable = yes
+
+# We dont want user hoem directories be be accessible in Windows
+[homes]
+browseable = no
+available = no
 EOL
-fi
 
 # --- Verify Samba configuration ---
 echo "Verifying Samba configuration..."
