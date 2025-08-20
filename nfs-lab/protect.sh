@@ -1,3 +1,16 @@
+#--------------------------------------------------------------
+# Script Name : protect.sh
+# Description : Create NFS shared directories with proper permissions
+#               for public and private access.
+# Usage       : bash protect.sh
+# Version     : 0.0
+# Author      : creme332
+#--------------------------------------------------------------
+# Requirements:
+# - CentOS 7.9.2009 or compatible
+# - Must be run with root privileges
+#--------------------------------------------------------------
+
 mkdir -p /nfsshare/public
 mkdir -p /nfsshare/private
 

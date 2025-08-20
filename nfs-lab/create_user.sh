@@ -1,6 +1,18 @@
 #!/bin/bash
-# Usage: sudo ./create_user_primary_only.sh username uid
-# Example: sudo ./create_user_primary_only.sh alice 1001 superusers
+
+#--------------------------------------------------------------
+# Script Name : create_user.sh
+# Description : Create a user with a specified UID and group id = superusers,
+#               intended for NFS client/server setups to ensure UID/GID sync.
+# Usage       : bash create_user.sh <username> <uid>
+# Example     : bash create_user.sh alice 3001
+# Version     : 0.0
+# Author      : creme332
+#--------------------------------------------------------------
+# Requirements:
+# - CentOS 7.9.2009 or compatible
+# - Must be run with root privileges
+#--------------------------------------------------------------
 
 # Root check
 if [[ $EUID -ne 0 ]]; then
