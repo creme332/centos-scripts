@@ -1,25 +1,61 @@
-# Logging ✅
+# Mail Lab
 
-On CentOS, `rsyslog` is responsible for logging system messages, including mail logs. If it’s not running or misconfigured, your mail logs may not be written to disk.
+- [Mail Lab](#mail-lab)
+  - [Basic Setup](#basic-setup)
+    - [Thunderbird Setup](#thunderbird-setup)
+  - [Extra: Squirrelmail Setup](#extra-squirrelmail-setup)
+  - [Useful Commands](#useful-commands)
+  - [Extra: Logging](#extra-logging)
+  - [Extra: CLI Mailing \[Not Recommended\]](#extra-cli-mailing-not-recommended)
+  - [Extra: Mail Backup](#extra-mail-backup)
+  - [Extra: Spam Detection](#extra-spam-detection)
+    - [Move Spam into Junk Folder](#move-spam-into-junk-folder)
+    - [Test Spam](#test-spam)
+  - [Extra: Virus Detection](#extra-virus-detection)
+    - [Automatic scan using CRON](#automatic-scan-using-cron)
+  - [Extra: Auto-Reply](#extra-auto-reply)
+    - [Create Auto-Responder Script](#create-auto-responder-script)
+    - [How it Works](#how-it-works)
+    - [Debugging](#debugging)
+
+## Basic Setup
+
+> [!NOTE]
+> Ensure that you are connected to the wired Ethernet network. If connected, you should see your IP address with `ifconfig ens33`.
+
+To setup mail server and Thunderbird with 2 default users `john` and `tom`:
 
 ```bash
-yum install -y rsyslog
-sudo systemctl start rsyslog
-sudo systemctl enable rsyslog
+bash mail_server.sh
 ```
 
-Dovecot errors are also present in `~/.dovecot.sieve.log`
-
-# CLI Mailing ✅
+Open Thunderbird in a new terminal:
 
 ```bash
-yum install -y mailx
-echo "This is a test email body" | mail -s "Mailx" john@csft.mu
+thunderbird
 ```
 
-# GUI Mailing ✅
+### Thunderbird Setup
 
-## Squirrelmail
+To setup an email account in Thunderbird, you must use the password for a previously created virtual user on the mail server. E.g. email = `john@csft.mu` and password = `john`. Do not use Thunderbird's manual configuration.
+
+When you add an account for the first time, you will see the following exception which you can ignore:
+
+![Add Security Exception which is triggered when adding an account for the first time](img/create-account-exception.png)
+
+When sending an email for the first time you will see the following errors which can be ignored:
+
+![Add Security Exception which is triggered when sending an email for the first time](img/send-mail-exception.png)
+
+![Send Message Error which is triggered when sending an email for the first time](img/send-mail-error.png)
+
+
+Verify:
+
+- [ ] Emails can be exchanged normally.
+- [ ] Emails can be exchanged from one  user to another.
+
+## Extra: Squirrelmail Setup
 
 ```bash
 yum install -y epel-release policycoreutils squirrelmail
@@ -72,21 +108,40 @@ service httpd restart
 
 Visit `http://mail.csft.mu/webmail` and login using `john` as username (not `john@csft.mu`).
 
-## Thunderbird
+## Useful Commands
 
-To setup an email account in Thunderbird, you must use the password for a previously created virtual user on the mail server. E.g. email = `john@csft.mu` and password = `john`. Do not use Thunderbird's manual configuration.
+To see mail settings for a user:
 
-When you add an account for the first time, you will see the following exception which you can ignore:
+```bash
+doveadm user john
+```
 
-![Add Security Exception which is triggered when adding an account for the first time](img/create-account-exception.png)
+To view available virtual users (users with no login shell):
 
-When sending an email for the first time you will see the following errors which can be ignored:
+```bash
+awk -F: '$7 ~ /(nologin|false)/ {print $1}' /etc/passwd
+```
 
-![Add Security Exception which is triggered when sending an email for the first time](img/send-mail-exception.png)
+## Extra: Logging
 
-![Send Message Error which is triggered when sending an email for the first time](img/send-mail-error.png)
+On CentOS, `rsyslog` is responsible for logging system messages, including mail logs. If it’s not running or misconfigured, your mail logs may not be written to disk.
 
-# Mail Backup ✅
+```bash
+yum install -y rsyslog
+sudo systemctl start rsyslog
+sudo systemctl enable rsyslog
+```
+
+Dovecot errors are also present in `~/.dovecot.sieve.log`.
+
+## Extra: CLI Mailing [Not Recommended]
+
+```bash
+yum install -y mailx
+echo "This is a test email body" | mail -s "Mailx" john@csft.mu
+```
+
+## Extra: Mail Backup
 
 Create a file `/usr/local/bin/mail-backup.sh` with the following contents:
 
@@ -149,7 +204,7 @@ To unarchive and extract:
 tar -xvzf archive.tar.gz
 ```
 
-# Spam Detection ✅
+## Extra: Spam Detection
 
 > Reference: https://www.linuxbabe.com/redhat/spamassassin-centos-rhel-block-email-spam
 
@@ -197,7 +252,7 @@ Restart services:
 systemctl restart postfix spamass-milter
 ```
 
-## Move Spam into Junk Folder ❌
+### Move Spam into Junk Folder
 
 ```bash
 yum install -y dovecot-pigeonhole
@@ -258,7 +313,7 @@ Restart dovecot:
 systemctl restart dovecot
 ```
 
-## Test Spam
+### Test Spam
 
 Send a test email with the GTUBE (Generic Test for Unsolicited Bulk Email) string to check if SpamAssassin flags it as spam:
 
@@ -274,7 +329,7 @@ To manully test SpamAssassin:
 spamassassin -t < test-email.eml
 ```
 
-# Virus Detection ✅
+## Extra: Virus Detection
 
 > Reference: https://www.transip.eu/knowledgebase/700-installing-clamav-in-centos-almalinux
 
@@ -344,7 +399,7 @@ To perform a manual scan of a specific directory:
 clamscan -r /path/to/directory
 ```
 
-## Automatic scan using CRON
+### Automatic scan using CRON
 
 You can schedule automatic scans using cron.
 
@@ -355,7 +410,6 @@ yum install crontabs cronie cronie-anacron -y
 systemctl start crond
 systemctl enable crond
 ```
-
 
 Open the cron editor:
 
@@ -372,7 +426,7 @@ Add a daily scan job:
 This runs a scan every night at 2 AM and logs results.
 
 
-# Auto-Reply ✅
+## Extra: Auto-Reply
 
 Install package:
 
@@ -419,7 +473,7 @@ Restart services:
 systemctl restart dovecot postfix
 ```
 
-## Create Auto-Responder Script
+### Create Auto-Responder Script
 
 To create an auto-responder for an existing user `john`:
 
@@ -441,13 +495,13 @@ chmod 600 /home/john/sieve/vacation.sieve
 
 To check if auto-reply is working send an email to `john@csft.mu` from another account. You should receive an auto-reply. The reply is sent only once in the number of configured days. 
 
-## How it Works
+### How it Works
 
 1. When a new email arrives, Dovecot looks for `~/.dovecot.sieve`.
 2. If `~/.dovecot.sieve` is a symlink, it follows the link to a script inside `~/.sieve/`.
 3. The active script is executed, processing the email based on the Sieve rules.
 
-## Debugging
+### Debugging
 
 Check mail logs:
 
