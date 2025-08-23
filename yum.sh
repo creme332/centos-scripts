@@ -86,31 +86,29 @@ if ! grep -q "$GOOGLE_DNS2" $RESOLV_CONF; then
 fi
 
 # Ask use whether to install additional packages
-read -p "Do you want wait a long time to update the system and install additional packages? (y/n): " answer
+read -p "Do you want wait a long time to update the system? (y/n): " answer < /dev/tty
 
 if [[ "$answer" =~ ^[Yy]$ ]]; then
     echo "Updating system..."
     yum update -y
-
-    echo "Installing essential packages..."
-    yum install -y epel-release net-tools firewalld
 else
-    echo "Skipping system update and package installation."
+    echo "Skipping system update."
 fi
 
-# Detect if running in WSL2 and create configuration file
+# Detect if running in WSL2 and perform additional changes
 if grep -qi microsoft /proc/version && grep -qi wsl2 /proc/version; then
     echo "Detected WSL2."
 
-    yum install -y sudo which policycoreutils
+    # Install additional packages which do not come by default
+    yum install -y epel-release net-tools firewalld sudo which policycoreutils
+
+    # Create configuration file
     cat <<EOL > /etc/wsl.conf
 [boot]
 systemd=true
 
 [network]
 generateHosts = false
-
-[network]
 generateResolvConf = false  
 EOL
 
