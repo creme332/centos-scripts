@@ -1,25 +1,38 @@
 #!/bin/bash
 
 #--------------------------------------------------------------
-# Script Name: Setup Yum on CentOS 7
-# Description: Updates repository urls so that Yum can keep functioning
-#              despite CentOS being discontinued. You can run the script
-#              using bash yum.sh
-# Version: 0.4
+# Script Name: Setup Yum on CentOS 7 for WSL2
+# Description: 
+#   - Updates CentOS 7 YUM repositories to point to the CentOS Vault
+#     (since CentOS 7 is EOL).
+#   - Adds Google DNS servers for reliable name resolution.
+#   - Updates and installs additional common utilities.
+#   - Configures WSL2 to use systemd and preserve custom DNS settings.
+#
+# Usage:
+#   sudo bash wsl2.sh
+#
+# Version: 0.1
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
-# - CentOS:7.9.2009 with sudo privileges
-# - Internet connectivity for package installation
+# - WSL2
+# - CentOS 7.9.2009 root/sudo access
+# - Internet connectivity
 #--------------------------------------------------------------
 
-set -euo pipefail  # Safer: exit on error, undefined vars, fail on pipe errors
+set -euo pipefail  # Exit on error, undefined vars, fail on pipe errors
 set -x             # Print commands
 
 # Ensure that user is logged in as root
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root. Exiting."
     exit 1
+fi
+
+# Detect if running in WSL2
+if ! grep -qi microsoft /proc/version && grep -qi wsl2 /proc/version; then
+    echo "Not running in WSL2."
 fi
 
 # Ping Google DNS with a timeout of 3 seconds, only 1 packet
@@ -86,5 +99,20 @@ if ! grep -q "$GOOGLE_DNS2" $RESOLV_CONF; then
     echo "$GOOGLE_DNS2" >> $RESOLV_CONF
 fi
 
-# Inform the user of the change
-echo "Setup complete."
+# Update system
+yum update -y
+
+# Install additional packages which do not come by default
+yum install -y epel-release net-tools firewalld sudo which policycoreutils wget curl vim
+
+# Create configuration file
+cat <<EOL > /etc/wsl.conf
+[boot]
+systemd=true
+
+[network]
+generateHosts = false
+generateResolvConf = false  
+EOL
+
+echo "Setup complete. Restart WSL2."
