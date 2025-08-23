@@ -1,5 +1,7 @@
 # Samba Lab
 
+## Basic Setup
+
 1. On VM, login as root and connect to the internet.
 2. Note down the server's IP address using `ifconfig ens33 | awk '/inet / {print $2}'`.
 3. Run `hostnamectl set-hostname server1.example.com` to change the hostname of the server.
@@ -23,7 +25,7 @@ The login details for `Secure` are username `rasho` and password `linux5000`. If
 > [!WARNING]
 When logging into `Secure` folder, do **not** tick `Save Credentials`.
 
-## Verification
+### Verification
 
 - [ ] In Windows, you should be able to create a file in `Anonymous` without login. 
 - [ ] The newly created file should appear in `/samba/anonymous`.
@@ -34,3 +36,43 @@ When logging into `Secure` folder, do **not** tick `Save Credentials`.
 
 > [!NOTE]
 Windows remembers the credentials you used for a Samba share until you log off or reboot. To test authentication again without restarting, you need to clear the cached network session. You can do that with the net use command in Windows command prompt: `net use * /delete`.
+
+## Extra: Recycle Bin
+
+Samba has a Recycle Bin feature built in via the `vfs_recycle` module. That way, deleted files don't disappear immediately but go into a hidden `.recycle` directory inside the share.
+
+To set it up:
+
+```bash
+curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/delete/samba-lab/recycle.sh | sh
+```
+
+### Verification Steps
+
+1. Access `\\centos\Secure` from a Windows client.
+2. Delete a file from the Secure share.
+3. Check that the deleted file appears under:
+   ```
+      /home/secure/.recycle/<username>/
+   ```
+5. Verify that directory structure is preserved.
+6. Confirm permissions allow the correct user and group to read/write.
+7. Repeat to ensure multiple versions of files are saved correctly.
+
+## Extra: Automatic Backup
+
+To set it up:
+
+```bash
+curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/delete/samba-lab/backup.sh | sh
+```
+
+### Verification
+
+Trigger a manual backup:
+
+```bash
+bash /etc/cron.daily/samba-backup
+```
+
+A backup directory should be created under `/backup/samba/<date>/`. Inside it you should see two folders: `anonymous` and `secure`.
