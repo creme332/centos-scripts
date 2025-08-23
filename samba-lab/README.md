@@ -2,8 +2,7 @@
 
 1. On VM, login as root and connect to the internet.
 2. Note down the server's IP address using `ifconfig ens33 | awk '/inet / {print $2}'`.
-3. Run `hostnamectl set-hostname server1.example.com` to change the hostname of the server.
-4. On Windows:
+3. On Windows:
    1. Open Command Prompt **as administrator**.
    2. Run `notepad "C:\Windows\System32\drivers\etc\hosts"` and add the following entry to the file that opens:
       ```
@@ -11,11 +10,11 @@
       ```
       Replace `<SERVER_IP>` with the IP obtained in step 2.
    3. Save file with `CTRL + S` then close notepad.
-5. On VM, run:
+4. On VM, run:
    ```bash
    curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/samba-lab/server.sh | sh
    ```
-6. On Windows, verify that the correct folders were created. Press `WIN + R` then enter `\\centos`. You should see two folders: Anonymous, Secure.
+5. On Windows, verify that the correct folders were created. Press `WIN + R` then enter `\\centos`. You should see two folders: Anonymous, Secure.
 
 > [!NOTE]
 The login details for `Secure` are username `rasho` and password `linux5000`. If you had previously created `rasho`, your login details are unchanged.

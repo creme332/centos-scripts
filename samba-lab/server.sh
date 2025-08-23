@@ -50,6 +50,17 @@ if ! ping -c 1 -W 3 8.8.8.8 >/dev/null 2>&1; then
     exit 1
 fi
 
+# Set hostname
+TARGET_HOSTNAME="server1.example.com"
+CURRENT_HOSTNAME=$(hostnamectl status --static)
+
+if [ "$CURRENT_HOSTNAME" != "$TARGET_HOSTNAME" ]; then
+    hostnamectl set-hostname "$TARGET_HOSTNAME"
+    echo "Hostname changed to $TARGET_HOSTNAME"
+else
+    echo "Hostname is already $TARGET_HOSTNAME"
+fi
+
 # --- Install packages ---
 yum install -y samba samba-client samba-common policycoreutils-python
 
