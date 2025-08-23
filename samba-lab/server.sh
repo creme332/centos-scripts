@@ -116,7 +116,7 @@ guest ok = no
 writable = yes
 browsable = yes
 
-# We dont want user hoem directories be be accessible in Windows
+# We don't want user home directories to be accessible in Windows
 [homes]
 browseable = no
 available = no
