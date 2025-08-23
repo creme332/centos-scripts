@@ -48,11 +48,11 @@ Finally, repeat the above steps to verify that your VM is accessible from Window
    ```
 5. On Windows, verify that the correct folders were created. Press `WIN + R` then enter `\\centos`. You should see two folders: Anonymous, Secure.
 
-> [!NOTE]
+> [!Important]
 The login details for `Secure` are username `rasho` and password `linux5000`. If you had previously created `rasho`, your login details are unchanged.
 
-> [!NOTE]
-Each time you restart your VM, you need to run `systemctl restart smb.service nmb.service`.
+> [!Important]
+Each time you start your VM, you need to run `systemctl restart smb.service`.
 
 > [!WARNING]
 When logging into `Secure` folder, do **not** tick `Save Credentials`.
@@ -64,7 +64,50 @@ When logging into `Secure` folder, do **not** tick `Save Credentials`.
 - [ ] You should be prompted for login details when attempting to access `Secure`. 
 - [ ] In Windows, you should be able to create a file in `Secure` after login. 
 - [ ] The newly created file should appear in `/home/secure`.
-- [ ] Everything still works after you restart your VM. You need to restart the Samba server on the VM on startup.
+- [ ] Everything still works after you restart your computer. You need to restart the Samba server on the VM on startup.
 
 > [!NOTE]
-Windows remembers the credentials you used for a Samba share until you log off or reboot. To test authentication again without restarting, you need to clear the cached network session. You can do that with the net use command in Windows command prompt: `net use * /delete`. You then need to wait a few seconds before using `WIN + R` again.
+Windows remembers the credentials you used for a Samba share until you log off or reboot. To test authentication again without restarting, you need to clear the cached network session. You can do that with the net use command in Windows command prompt: `net use * /delete`. You then need to wait a few seconds **at least 10 seconds** before using `WIN + R` again.
+
+> [!NOTE]
+> If obtain an error like `\\centos\Secure is not accessible ... Multiple connections to a server or shared resource is by the user name, are not allowed...`  when accessing Secure folder, then **restart your Windows machine**.
+
+## Extra: Recycle Bin
+
+Samba has a Recycle Bin feature built in via the `vfs_recycle` module. That way, deleted files don't disappear immediately but go into a hidden `.recycle` directory inside the share.
+
+To set it up:
+
+```bash
+curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/samba-lab/recycle.sh | sh
+```
+
+### Verification Steps
+
+1. Access `\\centos\Secure` from a Windows client.
+2. Delete a file from the Secure share.
+3. Check that the deleted file appears under:
+   ```
+      /home/secure/.recycle/<username>/
+   ```
+5. Verify that directory structure is preserved.
+6. Confirm permissions allow the correct user and group to read/write.
+7. Repeat to ensure multiple versions of files are saved correctly.
+
+## Extra: Automatic Backup
+
+To set it up:
+
+```bash
+curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/samba-lab/backup.sh | sh
+```
+
+### Verification
+
+Trigger a manual backup:
+
+```bash
+bash /etc/cron.daily/samba-backup
+```
+
+A backup directory should be created under `/backup/samba/<date>/`. Inside it you should see two folders: `anonymous` and `secure`.
