@@ -1,7 +1,7 @@
 
-# NFS
+# NFS Lab
 
-## Different machines
+## Basic Setup
 
 1. Open 2 VMs, one for client and another one for server.
 2. In both VMs:
@@ -20,15 +20,7 @@
 > [!NOTE]
 > Each time you restart the client VM, you need to reconnect to the internet and run `mount -a` as root.
 
-## Same machine
-
-To setup an NFS client & server on the **same** machine:
-
-```bash
-curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/nfs-lab/nfs.sh | sh
-```
-
-## Authentication
+## Extra: Authentication
 
 Assuming you already have a shared directory `/nfsshare` which both server and client can read/write:
 
