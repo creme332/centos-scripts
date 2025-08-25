@@ -35,7 +35,7 @@ Finally, repeat the above steps to verify that your VM is accessible from Window
 3. On Windows:
    1. Open Command Prompt **as administrator**.
    2. Open your host files with notepad: `notepad "C:\Windows\System32\drivers\etc\hosts"`
-   3. Identify **uncommented entries** containing `centos` as alias. If found, **delete the line or change the alia**s.
+   3. Identify all **uncommented entries** containing `centos` as alias. If found, **delete the entry or comment it**.
    4. Add a new entry to the file:
       ```
       <SERVER_IP> server1.example.com centos
@@ -52,7 +52,7 @@ Finally, repeat the above steps to verify that your VM is accessible from Window
 The login details for `Secure` are username `rasho` and password `linux5000`. If you had previously created `rasho`, your login details are unchanged.
 
 > [!NOTE]
-Each time you restart your VM, you need to run `systemctl restart smb.service nmb.service`
+Each time you restart your VM, you need to run `systemctl restart smb.service nmb.service`.
 
 > [!WARNING]
 When logging into `Secure` folder, do **not** tick `Save Credentials`.
