@@ -64,6 +64,25 @@ enabled=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
 EOL
 
+# Kill any process locking yum
+echo "Checking for processes holding yum lock..."
+YUM_LOCK_FILE="/var/run/yum.pid"
+
+if [[ -f "$YUM_LOCK_FILE" ]]; then
+    YUM_PID=$(cat "$YUM_LOCK_FILE")
+    if ps -p "$YUM_PID" > /dev/null 2>&1; then
+        echo "Killing process $YUM_PID holding yum lock..."
+        kill -9 "$YUM_PID"
+    fi
+fi
+
+for PROC in yum dnf packagekitd packagekit; do
+    if pgrep -x "$PROC" > /dev/null; then
+        echo "Killing $PROC processes..."
+        pkill -9 "$PROC"
+    fi
+done
+
 # Clear the yum cache to ensure it fetches the latest repository metadata
 yum clean all
 yum makecache
