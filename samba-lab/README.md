@@ -51,26 +51,30 @@ Finally, repeat the above steps to verify that your VM is accessible from Window
 > [!Important]
 The login details for `Secure` are username `rasho` and password `linux5000`. If you had previously created `rasho`, your login details are unchanged.
 
-> [!Important]
-Each time you start your VM, you need to run `systemctl restart smb.service`.
-
 > [!WARNING]
 When logging into `Secure` folder, do **not** tick `Save Credentials`.
 
+> [!NOTE]
+> If you obtain an error like `\\centos\Secure is not accessible ... Multiple connections to a server or shared resource is by the user name, are not allowed...`  when accessing the `Secure` folder, then **restart your Windows machine**.
+
+> [!Important]
+Each time you start your VM, you need to run `systemctl restart smb.service`.
+
+> [!NOTE]
+Even if you don't tick `Save Credentials`, **Windows remembers the credentials you used for a Samba share until you log off or reboot**. To test authentication again without restarting, you need to clear the cached network session. You can do that with the net use command in Windows command prompt: `net use * /delete`. You then need to wait **at least 10 seconds** before using `WIN + R` again.
+
 ### Verification
 
-- [ ] In Windows, you should be able to create a file in `Anonymous` without login. 
-- [ ] The newly created file should appear in `/samba/anonymous`.
-- [ ] You should be prompted for login details when attempting to access `Secure`. 
-- [ ] In Windows, you should be able to create a file in `Secure` after login. 
-- [ ] The newly created file should appear in `/home/secure`.
-- [ ] Everything still works after you restart your computer. You need to restart the Samba server on the VM on startup.
-
-> [!NOTE]
-Windows remembers the credentials you used for a Samba share until you log off or reboot. To test authentication again without restarting, you need to clear the cached network session. You can do that with the net use command in Windows command prompt: `net use * /delete`. You then need to wait a few seconds **at least 10 seconds** before using `WIN + R` again.
-
-> [!NOTE]
-> If obtain an error like `\\centos\Secure is not accessible ... Multiple connections to a server or shared resource is by the user name, are not allowed...`  when accessing Secure folder, then **restart your Windows machine**.
+| Test Case ID | Description                                                           | Expected Result                                    |
+| ------------ | --------------------------------------------------------------------- | -------------------------------------------------- |
+| TC-01        | In Windows, create a file in `Anonymous` without login                | File is created and appears in `/samba/anonymous`  |
+| TC-02        | In Windows, access `Secure` without login                             | Prompt for login details                           |
+| TC-03        | In Windows, create a file in `Secure` after login                     | File is created and appears in `/home/secure`      |
+| TC-04        | In Linux, create a file in `Anonymous` share                          | File is created and visible in Windows `Anonymous` |
+| TC-05        | In Linux, create a file in `Secure` share after login                 | File is created and visible in Windows `Secure`    |
+| TC-06        | In Windows, create a file in Linux-mounted `Anonymous` share          | File is created and visible in `/samba/anonymous`  |
+| TC-07        | In Windows, create a file in Linux-mounted `Secure` share after login | File is created and visible in `/home/secure`      |
+| TC-08        | Restart the computer (client) and Samba server (VM)                   | All functionality still works after restart        |
 
 ## Extra: Recycle Bin
 
