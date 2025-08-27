@@ -6,9 +6,11 @@
 #              on CentOS 7. Automates installation of required
 #              packages, server configuration, key and certificate
 #              generation, iptables routing, and IP forwarding.
+#              Also generates client certificates and creates
+#              client configuration files.
 #              Idempotent and safe to re-run multiple times.
-# Usage: Run the script as root using bash openvpn_setup.sh
-# Version: 0.2
+# Usage: Run the script as root using bash openvpn_setup.sh [client_name]
+# Version: 0.3
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -18,21 +20,94 @@
 # - EPEL repository enabled (the script handles this automatically)
 #--------------------------------------------------------------
 # Notes:
-# - Generates server and one default client certificate.
+# - Generates server and client certificates.
 # - Updates /etc/sysctl.conf to enable IPv4 forwarding.
 # - Configures iptables for NAT on the OpenVPN subnet (10.8.0.0/24).
-# - Uses EasyRSA 2.0 for certificate management.
+# - Uses EasyRSA 3.x for certificate management.
 # - OpenVPN service is enabled and started via systemd.
 # - Safe to re-run; existing keys, configs, and iptables rules are preserved.
+# - Creates client config files in /etc/openvpn/clients/
 #--------------------------------------------------------------
 
 set -euo pipefail
+
+# --- Variables ---
+CLIENT_NAME="${1:-client}"
+SERVER_IP=""
+
+# --- Validate client name ---
+if [[ -z "${CLIENT_NAME// }" ]]; then
+    echo "[ERROR] Client name cannot be empty. Exiting."
+    exit 1
+fi
+
+# --- Functions ---
+get_server_ip() {
+    # Try to get public IP
+    SERVER_IP=$(curl -s ifconfig.me || curl -s ipinfo.io/ip || curl -s icanhazip.com || echo "")
+    
+    if [[ -z "$SERVER_IP" ]]; then
+        # Fallback to local IP
+        SERVER_IP=$(ip route get 8.8.8.8 | awk '{print $7; exit}')
+    fi
+    
+    if [[ -z "$SERVER_IP" ]]; then
+        echo "[ERROR] Could not determine server IP address"
+        exit 1
+    fi
+    
+    echo "[INFO] Server IP detected as: $SERVER_IP"
+}
+
+generate_client_config() {
+    local client_name="$1"
+    local client_dir="/etc/openvpn/clients"
+    local client_config="$client_dir/${client_name}.ovpn"
+    
+    mkdir -p "$client_dir"
+    
+    if [[ -f "$client_config" ]]; then
+        echo "[INFO] Client config $client_config already exists, skipping generation."
+        return
+    fi
+    
+    cat > "$client_config" <<EOF
+client
+dev tun
+proto udp
+remote $SERVER_IP 1194
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+remote-cert-tls server
+cipher AES-256-CBC
+verb 3
+<ca>
+$(cat "$EASYRSA_DIR/pki/ca.crt")
+</ca>
+<cert>
+$(cat "$EASYRSA_DIR/pki/issued/${client_name}.crt")
+</cert>
+<key>
+$(cat "$EASYRSA_DIR/pki/private/${client_name}.key")
+</key>
+<tls-auth>
+$(cat "$EASYRSA_DIR/ta.key")
+</tls-auth>
+key-direction 1
+EOF
+    
+    echo "[INFO] Client config generated: $client_config"
+}
 
 # --- Root check ---
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root. Exiting."
     exit 1
 fi
+
+echo "[INFO] Setting up OpenVPN server with client: $CLIENT_NAME"
 
 # --- YUM check ---
 if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
@@ -51,7 +126,10 @@ fi
 # --- Install packages ---
 echo "[INFO] Installing required packages..."
 yum install -y epel-release
-yum install -y openvpn easy-rsa iptables-services net-tools
+yum install -y openvpn easy-rsa iptables-services net-tools curl
+
+# --- Get server IP ---
+get_server_ip
 
 # --- Verify EasyRSA v3 installation ---
 EASYRSA_BASE="/usr/share/easy-rsa"
@@ -137,8 +215,32 @@ if [[ ! -d $EASYRSA_DIR/pki ]]; then
     cp pki/dh.pem "$OVPN_DIR/"
     cp ta.key "$OVPN_DIR/"
 else
-    echo "[INFO] EasyRSA PKI already exists at $EASYRSA_DIR, skipping key generation."
+    echo "[INFO] EasyRSA PKI already exists at $EASYRSA_DIR, skipping server key generation."
 fi
+
+# --- Generate client certificate ---
+cd "$EASYRSA_DIR"
+
+if [[ ! -f "pki/issued/${CLIENT_NAME}.crt" ]]; then
+    echo "[INFO] Generating client certificate for: $CLIENT_NAME"
+    
+    # Set environment for client generation
+    export EASYRSA_BATCH=1
+    export EASYRSA_REQ_CN="$CLIENT_NAME"
+    
+    # Generate client request (no password)
+    ./easyrsa gen-req "$CLIENT_NAME" nopass
+    
+    # Sign client request
+    ./easyrsa sign-req client "$CLIENT_NAME"
+    
+    echo "[INFO] Client certificate generated for: $CLIENT_NAME"
+else
+    echo "[INFO] Client certificate for $CLIENT_NAME already exists, skipping generation."
+fi
+
+# --- Generate client config file ---
+generate_client_config "$CLIENT_NAME"
 
 # --- Firewall / Routing ---
 systemctl mask firewalld || true
@@ -178,3 +280,8 @@ systemctl enable openvpn@server.service
 systemctl restart openvpn@server.service
 
 echo "[SUCCESS] OpenVPN server setup complete."
+echo "[INFO] Client configuration file created: /etc/openvpn/clients/${CLIENT_NAME}.ovpn"
+echo "[INFO] Copy this file to your client device to connect to the VPN."
+echo ""
+echo "To generate additional client certificates, run:"
+echo "  bash $0 <new_client_name>"
