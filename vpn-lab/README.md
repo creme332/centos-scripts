@@ -5,9 +5,9 @@ The following instructions have **not** been tested at all.
 
 ## Prerequisites
 
-- 2 VMs: 1 for server and 1 for client
-- Both VMs should be connected to the internet and be login as root access.
-- 
+- 2 VMs: 1 server, 1 client
+- Both VMs should be running CentOS 7/8 (or compatible), connected to the internet, and accessible with root privileges.
+- `wget` and `gedit` must be installed.
 
 ## Basic Setup
 
