@@ -20,6 +20,20 @@
 > [!NOTE]
 > Each time you restart the client VM, you need to reconnect to the internet and run `mount -a` as root.
 
+
+### Verification
+
+| Test Case ID | Description                                                            | Expected Result                                      |
+| ------------ | ---------------------------------------------------------------------- | ---------------------------------------------------- |
+| TC-01        | On client, mount NFS export from server to `/mnt/nfsshare`             | Mount succeeds; `df -h` shows `/mnt/nfsshare`        |
+| TC-02        | On client, create a file in `/mnt/nfsshare`                            | File is created and visible in `/nfsshare` on server |
+| TC-03        | On server, create a file in `/nfsshare`                                | File is visible in `/mnt/nfsshare` on client         |
+| TC-04        | On client, delete a file in `/mnt/nfsshare`                            | File is removed from `/nfsshare` on server           |
+| TC-05        | On server, delete a file in `/nfsshare`                                | File is removed from `/mnt/nfsshare` on client       |
+| TC-06        | Verify permissions (read/write/execute) from client on `/mnt/nfsshare` | Access matches export configuration                  |
+| TC-07        | Restart NFS server service                                             | Client retains/re-establishes access without errors  |
+
+
 ## Extra: Authentication
 
 Assuming you already have a shared directory `/nfsshare` which both server and client can read/write:
