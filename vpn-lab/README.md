@@ -34,7 +34,7 @@ The following instructions have **not** been tested at all.
 2. In client VM, connect to server: `vpn connect`.
 
 > [!NOTE]
-> Server should start OpenVPN service automatically on reboot. There is no need to manually start it.
+> The server should start OpenVPN service **automatically** on reboot. If you need to manually restart it, use `systemctl restart openvpn-server@server.service`.
 
 ## Verification
 
