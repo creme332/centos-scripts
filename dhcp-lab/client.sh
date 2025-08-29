@@ -1,5 +1,21 @@
 #!/bin/bash
 
+#--------------------------------------------------------------
+# Script Name: Setup DHCP Client on CentOS 7.9
+# Description: Configures a CentOS 7.9 machine to obtain its IP
+#              address dynamically via DHCP. Handles interface 
+#              detection, backup of existing configuration files, 
+#              and updates network scripts.
+# Usage: Run the script as root using bash dhcp-client.sh
+# Version: 0.0
+# Author: creme332
+#--------------------------------------------------------------
+# Requirements:
+# - CentOS 7.9.2009 with root privileges
+# - Internet connectivity to test reachability
+# - VMware or physical machine (not WSL2) with at least one network interface
+#--------------------------------------------------------------
+
 set -euo pipefail
 
 DATE_SUFFIX=$(date +%F-%T)
@@ -35,6 +51,11 @@ else
     exit 1
 fi
 
+# Install packages (These packages are typically already installed)
+yum install -y dhclient net-tools NetworkManager
+systemctl enable NetworkManager
+systemctl start NetworkManager
+
 # Detect primary NIC using ifconfig, remove trailing colon
 PRIMARY_IF=$(ifconfig -a | sed 's/[ \t].*//;/^$/d' | grep -v lo | head -n 1 | tr -d ':')
 
@@ -59,8 +80,9 @@ fi
 backup_file "$IFCFG_FILE"
 declare -A cfg
 cfg=( ["DEVICE"]="$PRIMARY_IF" ["BOOTPROTO"]="dhcp" ["TYPE"]="Ethernet" ["ONBOOT"]="yes" )
+
 touch "$IFCFG_FILE"
-for key in "${cfg[@]/%/}"; do
+for key in "${!cfg[@]}"; do
     if grep -q "^$key=" "$IFCFG_FILE" 2>/dev/null; then
         sed -i "s/^$key=.*/$key=${cfg[$key]}/" "$IFCFG_FILE"
     else
@@ -68,5 +90,25 @@ for key in "${cfg[@]/%/}"; do
     fi
 done
 
-echo "DHCP client configuration complete for interface: $PRIMARY_IF"
-echo "Verify with: ifconfig $PRIMARY_IF or 'nmcli device status'"
+# Restart network to apply DHCP configuration
+systemctl restart network
+
+# Verify IP assignment
+echo "Verifying DHCP IP assignment on $PRIMARY_IF..."
+for i in {1..5}; do
+    IP_ASSIGNED=$(ip addr show "$PRIMARY_IF" | awk '/inet / {print $2}' | cut -d/ -f1)
+    if [ -n "$IP_ASSIGNED" ]; then
+        echo "DHCP client received IP: $IP_ASSIGNED on interface $PRIMARY_IF"
+        break
+    else
+        echo "Waiting for IP assignment..."
+        sleep 1
+    fi
+done
+
+if [ -z "$IP_ASSIGNED" ]; then
+    echo "Failed to obtain IP via DHCP on $PRIMARY_IF"
+    exit 1
+fi
+
+echo "DHCP client configuration complete."
