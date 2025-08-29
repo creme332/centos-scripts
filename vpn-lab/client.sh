@@ -5,7 +5,7 @@
 # Description: Installs OpenVPN client and configures it to connect
 #              to an OpenVPN server using a provided .ovpn config file.
 #              Optimized for CentOS 7 systems.
-# Usage: bash openvpn_client_setup.sh <path_to_config_file.ovpn>
+# Usage: bash client.sh <path_to_config_file.ovpn>
 # Version: 0.0
 # Author: creme332
 #--------------------------------------------------------------

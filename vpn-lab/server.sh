@@ -9,7 +9,7 @@
 #              Also generates client certificates and creates
 #              client configuration files.
 #              Idempotent and safe to re-run multiple times.
-# Usage: Run the script as root using bash openvpn_setup.sh [client_name]
+# Usage: Run the script as root using bash server.sh [client_name]
 # Version: 0.3
 # Author: creme332
 #--------------------------------------------------------------
