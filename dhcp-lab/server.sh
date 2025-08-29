@@ -1,6 +1,21 @@
 #!/bin/bash
 
-# DHCP Server Configuration Script for CentOS 7.9
+#------------------------------------------------------------------------------------
+# Script Name: Setup DHCP Server on CentOS 7.9
+# Description: Installs and configures a DHCP server on a 
+#              CentOS 7.9 machine. Handles static IP 
+#              configuration, interface backup, DHCPDARGS 
+#              setup, dhcpd.conf creation, service enablement, 
+#              and verification of service status.
+# Usage: Run the script as root using bash server.sh
+# Version: 0.0
+# Author: creme332
+#------------------------------------------------------------------------------------
+# Requirements:
+# - CentOS 7.9.2009 with root privileges
+# - Internet connectivity for package installation and updates
+# - VMware or physical machine (not WSL2) with at least one network interface
+#------------------------------------------------------------------------------------
 
 set -euo pipefail
 
@@ -38,26 +53,26 @@ else
     exit 1
 fi
 
-# Step 0: Install DHCP server and client
+# Step 0: Install DHCP server
 echo "Installing DHCP package..."
-yum install -y dhcp
+yum install -y dhcp net-tools
 
-# Step 1: Detect primary NIC using ifconfig (non-loopback)
-PRIMARY_IF=$(ifconfig -a | sed 's/[ \t].*//;/^$/d' | grep -v lo | head -n 1 | tr -d ':')
+# Step 1: Detect primary NIC using ip (non-loopback)
+PRIMARY_IF=$(ip -o link show | awk -F': ' '$2 != "lo"{print $2}' | head -n1)
 if [ -z "$PRIMARY_IF" ]; then
     echo "No valid network interface detected."
     exit 1
 fi
 echo "Detected primary network interface: $PRIMARY_IF"
 
-# Step 2: Configure static IP for the server interface
+# Step 2: Configure static IP
 IFCFG_FILE="/etc/sysconfig/network-scripts/ifcfg-${PRIMARY_IF}"
 backup_file "$IFCFG_FILE"
 
 STATIC_IP="200.100.50.10"
 NETMASK="255.255.255.0"
 GATEWAY="$STATIC_IP"
-HWADDR=$(ifconfig "$PRIMARY_IF" | grep -i ether | awk '{print $2}')
+HWADDR=$(ip link show "$PRIMARY_IF" | awk '/ether/ {print $2}')
 
 declare -A cfg
 cfg=( 
@@ -81,7 +96,17 @@ for key in "${!cfg[@]}"; do
 done
 echo "$IFCFG_FILE configured with static IP $STATIC_IP"
 
-# Step 3: Configure DHCPDARGS in /etc/sysconfig/dhcpd
+# Restart network and verify IP applied
+systemctl restart network
+
+if ip addr show "$PRIMARY_IF" | grep -q "$STATIC_IP"; then
+    echo "Network interface $PRIMARY_IF is up with IP $STATIC_IP"
+else
+    echo "Failed to apply static IP to $PRIMARY_IF. Exiting."
+    exit 1
+fi
+
+# Step 3: Configure DHCPDARGS
 DHCPD_FILE="/etc/sysconfig/dhcpd"
 backup_file "$DHCPD_FILE"
 
@@ -92,13 +117,12 @@ else
 fi
 echo "$DHCPD_FILE configured with DHCPDARGS=$PRIMARY_IF"
 
-# Determine the system domain name dynamically, fallback to 'localdomain'
+# Step 4: Configure /etc/dhcp/dhcpd.conf
 DOMAIN_NAME=$(hostname -d)
 if [ -z "$DOMAIN_NAME" ]; then
     DOMAIN_NAME="localdomain"
 fi
 
-# Step 4: Configure /etc/dhcp/dhcpd.conf
 DHCP_CONF="/etc/dhcp/dhcpd.conf"
 backup_file "$DHCP_CONF"
 
@@ -122,7 +146,22 @@ echo "$DHCP_CONF configured with subnet and lease settings."
 echo "Starting DHCP service..."
 systemctl enable dhcpd
 systemctl restart dhcpd
-systemctl status dhcpd --no-pager
+
+# Wait up to 5 seconds for service to become active
+for i in {1..5}; do
+    if systemctl is-active --quiet dhcpd; then
+        echo "DHCP service started successfully."
+        break
+    else
+        sleep 1
+    fi
+done
+
+if ! systemctl is-active --quiet dhcpd; then
+    echo "Failed to start DHCP service."
+    systemctl status dhcpd --no-pager
+    exit 1
+fi
 
 echo "DHCP Server setup complete."
 echo "Check client IP allocation using ifconfig on the client."
