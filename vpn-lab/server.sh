@@ -10,7 +10,7 @@
 #              client configuration files.
 #              Idempotent and safe to re-run multiple times.
 # Usage: Run the script as root using bash server.sh [client_name]
-# Version: 0.3
+# Version: 0.4
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -248,7 +248,7 @@ systemctl enable iptables
 systemctl stop firewalld || true
 systemctl start iptables
 
-# Detect interface automatically using route/ifconfig
+# --- Detect interface automatically using route ---
 NET_IF=$(route -n | awk '/^0.0.0.0/ {print $8; exit}')
 if [[ -z "$NET_IF" ]]; then
     echo "[ERROR] Could not detect default network interface."
@@ -263,7 +263,7 @@ iptables-save > /etc/sysconfig/iptables
 # --- Enable IP forwarding ---
 SYSCTL_CONF="/etc/sysctl.conf"
 
-# Ensure sysctl.conf exists
+# --- Ensure sysctl.conf exists ---
 if [[ ! -f "$SYSCTL_CONF" ]]; then
     touch "$SYSCTL_CONF"
 fi
@@ -276,12 +276,18 @@ fi
 sysctl -p >/dev/null
 
 # --- Enable and start OpenVPN ---
-systemctl enable openvpn@server.service
-systemctl restart openvpn@server.service
+systemctl enable openvpn-server@server.service
+systemctl restart openvpn-server@server.service
 
-echo "[SUCCESS] OpenVPN server setup complete."
-echo "[INFO] Client configuration file created: /etc/openvpn/clients/${CLIENT_NAME}.ovpn"
-echo "[INFO] Copy this file to your client device to connect to the VPN."
-echo ""
-echo "To generate additional client certificates, run:"
-echo "  bash $0 <new_client_name>"
+# --- Check if properly started ---
+if systemctl is-active --quiet openvpn-server@server.service; then
+    echo "[SUCCESS] OpenVPN server setup complete."
+    echo "[INFO] Client configuration file created: /etc/openvpn/clients/${CLIENT_NAME}.ovpn"
+    echo "[INFO] Copy this file to your client device to connect to the VPN."
+    echo ""
+    echo "To generate additional client certificates, run:"
+    echo "  bash $0 <new_client_name>"
+else
+    echo "[ERROR] OpenVPN server failed to start. Check 'systemctl status openvpn-server@server.service' for details."
+    exit 1
+fi
