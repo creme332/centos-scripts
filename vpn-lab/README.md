@@ -1,8 +1,5 @@
 # VPN Lab
 
->[!CAUTION]
-The following instructions have **not** been tested at all.
-
 ## Prerequisites
 
 - 2 VMs: 1 server, 1 client.
