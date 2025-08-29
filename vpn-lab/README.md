@@ -13,7 +13,7 @@ The following instructions have **not** been tested at all.
 1. On server VM:
    1. Run:
       ```bash
-      curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/vpn/vpn-lab/server.sh | bash -s client
+      curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/server.sh | bash -s client
       ```
    2. Copy the contents of `/etc/openvpn/clients/client.ovpn` to your clipboard.
 
@@ -25,7 +25,7 @@ The following instructions have **not** been tested at all.
       and paste the recently copied text. Save the file.
    2. Run:
       ```bash
-      curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/vpn/vpn-lab/client.sh | bash -s ~/client.ovpn
+      curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/client.sh | bash -s ~/client.ovpn
       ```
 
 ## Usage
