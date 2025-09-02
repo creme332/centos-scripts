@@ -240,11 +240,27 @@ STATUS_EOF
 
 # --- Main Script ---
 
-# Check for root privileges
+# --- Root check ---
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root. Exiting."
     exit 1
 fi
+
+# --- YUM check ---
+if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+    echo "[OK] YUM configured"
+else
+    echo "[ERROR] YUM not configured. Exiting."
+    exit 1
+fi
+
+# --- Internet check ---
+if ! ping -c 1 -W 3 8.8.8.8 >/dev/null 2>&1; then
+    echo "[ERROR] No internet connection. Exiting."
+    exit 1
+fi
+
+echo "[INFO] Setting up OpenVPN server with client: $CLIENT_NAME"
 
 # Check if config file is provided
 if [[ $# -eq 0 ]]; then
