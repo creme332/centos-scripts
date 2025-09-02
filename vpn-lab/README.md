@@ -28,7 +28,7 @@
 ## Usage
 
 1. On both client and server VMs, login as root and connect to the internet.
-2. In client VM, connect to server: `vpn connect`.
+2. On client VM, connect to the VPN server using either `vpn-connect` or `openvpn --config ~/client.ovpn`.
 
 > [!NOTE]
 > The server should start OpenVPN service **automatically** on reboot. If you need to manually restart it, use `systemctl restart openvpn-server@server.service`.
