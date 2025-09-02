@@ -46,3 +46,11 @@
 | TC-07        | Restart OpenVPN service on both client and server                                              | VPN connection re-establishes automatically              |
 | TC-08        | Reboot client and reconnect to VPN (`vpn connect`)                                             | Client reconnects successfully to server after reboot    |
 | TC-09        | Reboot server and reconnect VPN                                                                | Server comes back online, client reconnects successfully |
+
+## Uninstallation
+
+To complete remove OpenRSA and OpenVPN:
+
+```bash
+curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/clean.sh | sh
+```
