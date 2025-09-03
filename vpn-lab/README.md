@@ -8,7 +8,7 @@
 
 ## Installation
 
-## Server VM
+### Server VM
 
 1. Run setup script:  
    ```bash
@@ -18,9 +18,9 @@
    ```bash
    gedit /etc/openvpn/clients/client.ovpn
    ```
-   and copy its contents to your clipboard with `CTRL+A` & `CTRL+C`.
+   and copy its contents to your clipboard with <kbd>CTRL + A</kbd> & <kbd>CTRL + C</kbd>.
 
-## Client VM
+### Client VM
 
 1. Run:
    ```bash
@@ -41,11 +41,12 @@
 ## Usage
 
 1. On both client and server VMs, ensure you have root access and internet connectivity.
-2. On client VM, connect to the VPN:
+2. On server VM, run `systemctl status openvpn-server@server.service` to check if VPN service is running.
+3. On client VM, connect to the VPN:
    ```bash
    openvpn --config ~/client.ovpn
    ```
-3. Open another terminal on client and run:
+4. On client VM, open another terminal and run:
    ```bash
    vpn-verify
    ```
