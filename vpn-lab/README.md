@@ -1,5 +1,16 @@
 # VPN Lab
 
+- [VPN Lab](#vpn-lab)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+    - [Server VM](#server-vm)
+    - [Client VM](#client-vm)
+  - [Usage](#usage)
+  - [Verification](#verification)
+  - [Commands for Manual Testing](#commands-for-manual-testing)
+  - [Uninstallation](#uninstallation)
+
+
 ## Prerequisites
 
 - 2 VMs: 1 server, 1 client
