@@ -1,0 +1,191 @@
+#!/bin/bash
+
+#--------------------------------------------------------------
+# Script Name: vpn-verify
+# Description: Verify if OpenVPN connection is working properly
+#              using traceroute and routing analysis
+# Usage: vpn-verify [target_ip]
+# Example: vpn-verify
+#          vpn-verify 1.1.1.1
+# Version: 0.0
+# Author: creme332
+#--------------------------------------------------------------
+# Notes:
+# - Checks if VPN interface (tun0) exists
+# - Verifies routing goes through VPN gateway
+# - Tests connectivity and DNS resolution
+# - Uses traceroute to confirm traffic path
+#--------------------------------------------------------------
+
+set -euo pipefail
+
+# Default target for testing (Google DNS)
+TARGET_IP="${1:-8.8.8.8}"
+
+echo "=== VPN Connection Verification ==="
+echo "Testing connectivity to: $TARGET_IP"
+echo ""
+
+# --- Check VPN Interface ---
+echo "=== VPN Interface Check ==="
+if ip addr show tun0 >/dev/null 2>&1; then
+    VPN_IP=$(ip addr show tun0 | awk '/inet / {print $2}' | cut -d'/' -f1)
+    echo "✓ VPN interface (tun0) is UP"
+    echo "  VPN IP address: $VPN_IP"
+    
+    # Check VPN subnet
+    if [[ "$VPN_IP" =~ ^10\.8\.0\. ]]; then
+        echo "  ✓ VPN IP is in expected subnet (10.8.0.x)"
+    else
+        echo "  ? VPN IP is in unexpected subnet: $VPN_IP"
+    fi
+else
+    echo "✗ VPN interface (tun0) is DOWN or not found"
+    echo ""
+    echo "Possible issues:"
+    echo "  - VPN is not connected"
+    echo "  - OpenVPN service is not running"
+    echo "  - Connection failed"
+    echo ""
+    echo "Try connecting with: openvpn --config /path/to/your/config.ovpn"
+    exit 1
+fi
+echo ""
+
+# --- Routing Analysis ---
+echo "=== Routing Analysis ==="
+
+# Check default routes
+echo "Current default routes:"
+DEFAULT_ROUTES=$(ip route show default)
+echo "$DEFAULT_ROUTES"
+echo ""
+
+# Check VPN-specific routes
+echo "VPN routes (through tun0):"
+VPN_ROUTES=$(ip route show | grep tun0)
+echo "$VPN_ROUTES"
+echo ""
+
+# Check route to target
+echo "Route to $TARGET_IP:"
+TARGET_ROUTE=$(ip route get "$TARGET_IP" 2>/dev/null || echo "Route lookup failed")
+echo "$TARGET_ROUTE"
+
+if echo "$TARGET_ROUTE" | grep -q tun0; then
+    echo "✓ Traffic to $TARGET_IP will use VPN interface"
+else
+    echo "⚠ Traffic to $TARGET_IP may NOT use VPN interface"
+fi
+echo ""
+
+# --- Traceroute Test ---
+echo "=== Traceroute Verification ==="
+echo "Traceroute to $TARGET_IP:"
+echo "(Checking if first hop is VPN gateway)"
+echo ""
+
+TRACEROUTE_OUTPUT=$(traceroute -n -w 3 -q 1 -m 8 "$TARGET_IP" 2>/dev/null || echo "Traceroute failed")
+echo "$TRACEROUTE_OUTPUT"
+echo ""
+
+# Analyze traceroute results
+FIRST_HOP=$(echo "$TRACEROUTE_OUTPUT" | sed -n '2p' | awk '{print $2}' 2>/dev/null)
+
+echo "Traceroute analysis:"
+if [[ -n "$FIRST_HOP" ]]; then
+    echo "  First hop: $FIRST_HOP"
+    
+    if [[ "$FIRST_HOP" =~ ^10\.8\.0\. ]]; then
+        echo "  ✓ SUCCESS: First hop is VPN gateway (10.8.0.x subnet)"
+        echo "  ✓ Traffic is being routed through VPN tunnel"
+        VPN_WORKING=true
+    elif [[ "$FIRST_HOP" =~ ^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.) ]]; then
+        echo "  ⚠ WARNING: First hop is private IP ($FIRST_HOP)"
+        echo "  ⚠ Traffic may be bypassing VPN tunnel"
+        VPN_WORKING=false
+    else
+        echo "  ? First hop is public IP ($FIRST_HOP)"
+        echo "  ? This might indicate VPN is not routing correctly"
+        VPN_WORKING=false
+    fi
+else
+    echo "  ✗ Could not determine first hop from traceroute"
+    VPN_WORKING=false
+fi
+echo ""
+
+# --- DNS Test ---
+echo "=== DNS Verification ==="
+echo "Current DNS servers:"
+cat /etc/resolv.conf | grep nameserver | while read line; do
+    DNS_SERVER=$(echo "$line" | awk '{print $2}')
+    echo "  $DNS_SERVER"
+    
+    # Check if it's VPN-pushed DNS
+    if [[ "$DNS_SERVER" == "8.8.8.8" ]] || [[ "$DNS_SERVER" == "8.8.4.4" ]]; then
+        echo "    ✓ This is VPN-pushed DNS"
+    fi
+done
+
+echo ""
+echo "DNS resolution test:"
+if nslookup google.com >/dev/null 2>&1; then
+    echo "✓ DNS resolution working"
+else
+    echo "✗ DNS resolution failed"
+fi
+echo ""
+
+# --- Connectivity Test ---
+echo "=== Connectivity Test ==="
+echo "Testing connectivity through current route:"
+
+if ping -c 3 -W 5 "$TARGET_IP" >/dev/null 2>&1; then
+    echo "✓ Can reach $TARGET_IP (3/3 packets)"
+else
+    echo "✗ Cannot reach $TARGET_IP"
+fi
+
+# Test different target
+if ping -c 1 -W 5 1.1.1.1 >/dev/null 2>&1; then
+    echo "✓ Can reach 1.1.1.1 (Cloudflare DNS)"
+else
+    echo "✗ Cannot reach 1.1.1.1"
+fi
+echo ""
+
+# --- Final Assessment ---
+echo "=== VPN Status Summary ==="
+
+if [[ -n "$VPN_IP" ]] && [[ "${VPN_WORKING:-false}" == "true" ]]; then
+    echo "🟢 VPN Status: WORKING CORRECTLY"
+    echo "   Connection: Established"
+    echo "   VPN IP: $VPN_IP"
+    echo "   Routing: Through VPN tunnel"
+    echo "   First hop: $FIRST_HOP (VPN gateway)"
+elif [[ -n "$VPN_IP" ]] && [[ "${VPN_WORKING:-false}" == "false" ]]; then
+    echo "🟡 VPN Status: CONNECTED but routing issues"
+    echo "   Connection: Established"  
+    echo "   VPN IP: $VPN_IP"
+    echo "   Issue: Traffic may not be using VPN tunnel"
+    echo "   First hop: $FIRST_HOP (should be 10.8.0.x)"
+else
+    echo "🔴 VPN Status: NOT CONNECTED"
+    echo "   Issue: No VPN interface found"
+fi
+
+echo ""
+echo "=== Troubleshooting Tips ==="
+if [[ "${VPN_WORKING:-false}" == "false" ]]; then
+    echo "If VPN is not working properly:"
+    echo "  1. Check OpenVPN logs: journalctl -u openvpn-client@* -f"
+    echo "  2. Verify server is running: systemctl status openvpn-server@server"
+    echo "  3. Test manual connection: openvpn --config /path/to/config.ovpn --verb 6"
+    echo "  4. Check firewall on server: iptables -L -n | grep 1194"
+    echo "  5. Verify server IP in config matches actual server"
+fi
+
+echo ""
+echo "To connect: openvpn --config /path/to/your/config.ovpn"
+echo "To disconnect: Kill the openvpn process or press Ctrl+C"
