@@ -89,8 +89,8 @@ sudo journalctl -f | grep openvpn            # Client logs
 
 ## Uninstallation
 
-To completely remove OpenVPN and EasyRSA:
+To completely remove OpenVPN and EasyRSA (on server or client VM):
 
 ```bash
-curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/cleanup.sh |  bash
+curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/clean.sh | bash
 ```
