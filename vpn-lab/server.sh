@@ -10,7 +10,7 @@
 #              client configuration files.
 #              Idempotent and safe to re-run multiple times.
 # Usage: Run the script as root using bash server.sh [client_name]
-# Version: 0.4
+# Version: 0.5
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -27,6 +27,7 @@
 # - OpenVPN service is enabled and started via systemd.
 # - Safe to re-run; existing keys, configs, and iptables rules are preserved.
 # - Creates client config files in /etc/openvpn/clients/
+# - Uses server's interface IP instead of public IP
 #--------------------------------------------------------------
 
 set -euo pipefail
@@ -43,20 +44,40 @@ fi
 
 # --- Functions ---
 get_server_ip() {
-    # Try to get public IP
-    SERVER_IP=$(curl -s ifconfig.me || curl -s ipinfo.io/ip || curl -s icanhazip.com || echo "")
+    echo "[INFO] Detecting server interface IP address..."
     
-    if [[ -z "$SERVER_IP" ]]; then
-        # Fallback to local IP
-        SERVER_IP=$(ip route get 8.8.8.8 | awk '{print $7; exit}')
-    fi
+    # Get the default network interface
+    local default_interface=$(ip route | awk '/^default/ {print $5; exit}')
     
-    if [[ -z "$SERVER_IP" ]]; then
-        echo "[ERROR] Could not determine server IP address"
+    if [[ -z "$default_interface" ]]; then
+        echo "[ERROR] Could not detect default network interface"
         exit 1
     fi
     
-    echo "[INFO] Server IP detected as: $SERVER_IP"
+    echo "[INFO] Default network interface: $default_interface"
+    
+    # Get the IP address of the default interface
+    SERVER_IP=$(ip addr show "$default_interface" | awk '/inet [0-9]/ {print $2}' | cut -d'/' -f1 | head -1)
+    
+    if [[ -z "$SERVER_IP" ]]; then
+        echo "[ERROR] Could not get IP address for interface $default_interface"
+        exit 1
+    fi
+    
+    # Validate IP format
+    if [[ ! "$SERVER_IP" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        echo "[ERROR] Invalid IP address format detected: $SERVER_IP"
+        exit 1
+    fi
+    
+    echo "[INFO] Server interface IP detected: $SERVER_IP ($default_interface)"
+    
+    # Warn if it's a private IP and client will connect from outside
+    if [[ "$SERVER_IP" =~ ^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.) ]]; then
+        echo "[WARNING] Detected private IP address: $SERVER_IP"
+        echo "[WARNING] This will only work if clients are on the same network"
+        echo "[WARNING] For external clients, you may need to use public IP instead"
+    fi
 }
 
 generate_client_config() {
@@ -283,6 +304,7 @@ systemctl restart openvpn-server@server.service
 if systemctl is-active --quiet openvpn-server@server.service; then
     echo "[SUCCESS] OpenVPN server setup complete."
     echo "[INFO] Client configuration file created: /etc/openvpn/clients/${CLIENT_NAME}.ovpn"
+    echo "[INFO] Server IP used in client config: $SERVER_IP"
     echo "[INFO] Copy this file to your client device to connect to the VPN."
     echo ""
     echo "To generate additional client certificates, run:"
