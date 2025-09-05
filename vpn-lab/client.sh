@@ -2,8 +2,8 @@
 
 #-------------------------------------------------------------- 
 # Script Name: OpenVPN Client Setup for CentOS 7
-# Description: Minimal setup - installs packages and prepares system
-# Usage: bash client.sh [path_to_config_file.ovpn]
+# Description: Minimal setup - installs packages only
+# Usage: bash client.sh
 # Version: 1.0
 # Author: creme332
 #--------------------------------------------------------------
@@ -23,26 +23,6 @@ install_packages() {
     yum install -y openvpn curl traceroute bind-utils
     
     echo "[OK] Packages installed"
-}
-
-setup_config() {
-    local config_file="$1"
-    local filename=$(basename "$config_file")
-    local target_file
-    
-    # Determine target location
-    if [[ -n "${SUDO_USER:-}" ]]; then
-        local user_home=$(eval echo "~$SUDO_USER")
-        target_file="$user_home/$filename"
-        cp "$config_file" "$target_file"
-        chown "$SUDO_USER:$SUDO_USER" "$target_file"
-    else
-        target_file="/root/$filename"
-        cp "$config_file" "$target_file"
-    fi
-    
-    chmod 600 "$target_file"
-    echo "[OK] Config copied to: $target_file"
 }
 
 # --- Main Script ---
@@ -67,16 +47,5 @@ fi
 # Install packages
 install_packages
 
-# Handle config file if provided
-if [[ $# -ge 1 ]]; then
-    CONFIG_FILE="$1"
-    
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "[ERROR] Config file not found: $CONFIG_FILE"
-        exit 1
-    fi
-    
-    setup_config "$CONFIG_FILE"
-fi
-
 echo "[SUCCESS] OpenVPN client setup complete"
+echo "[INFO] To connect to VPN, use: openvpn --config /path/to/your/config.ovpn"
