@@ -14,9 +14,9 @@
 ## Prerequisites
 
 - 2 VMs: 1 server, 1 client
-- Both VMs should be running CentOS 7, connected to the internet, and accessible with root privileges
-- CentOS EOL issue must be resolved on both VMs.
-- Client can ping the server.
+- Root privileges and internet connectivity
+- Bridge networking mode enabled on both VMs
+- Client can ping server
 
 ## Installation
 
@@ -58,6 +58,7 @@
    ```bash
    openvpn --config ~/client.ovpn
    ```
+   Note: This command runs in the foreground and will continue running while connected to the VPN.
 4. On client VM, open another terminal and run:
    ```bash
    vpn-verify
