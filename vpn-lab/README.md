@@ -15,7 +15,8 @@
 
 - 2 VMs: 1 server, 1 client
 - Both VMs should be running CentOS 7, connected to the internet, and accessible with root privileges
-- CentOS EOL issue must be resolved on both VMs
+- CentOS EOL issue must be resolved on both VMs.
+- Client can ping the server.
 
 ## Installation
 
@@ -61,6 +62,13 @@
    ```bash
    vpn-verify
    ```
+   Look for these signs that the VPN is working:
+
+   - `✓ VPN interface (tun0) is UP` with VPN IP `10.8.0.x`
+   - `✓ Traffic to 8.8.8.8 will use VPN interface`
+   - `✓ SUCCESS: First hop is VPN gateway (10.8.0.x subnet)`
+   - `✓ Can reach 8.8.8.8` and `✓ Can reach 1.1.1.1`
+   - Final status: `VPN Status: WORKING CORRECTLY`
 
 > [!NOTE]
 > The server should start OpenVPN service **automatically** on reboot. If you need to manually restart it, use `systemctl restart openvpn-server@server.service`.
