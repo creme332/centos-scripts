@@ -10,7 +10,7 @@
 #              client configuration files.
 #              Idempotent and safe to re-run multiple times.
 # Usage: Run the script as root using bash server.sh [client_name]
-# Version: 0.5
+# Version: 0.6
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -28,6 +28,7 @@
 # - Safe to re-run; existing keys, configs, and iptables rules are preserved.
 # - Creates client config files in /etc/openvpn/clients/
 # - Uses server's interface IP instead of public IP
+# - Fixed iptables FORWARD chain rule ordering to prevent blocking
 #--------------------------------------------------------------
 
 set -euo pipefail
@@ -277,9 +278,29 @@ if [[ -z "$NET_IF" ]]; then
 fi
 echo "[INFO] Detected network interface: $NET_IF"
 
+# --- Configure iptables rules properly ---
+echo "[INFO] Configuring iptables rules..."
+
+# Open OpenVPN port on INPUT
+iptables -C INPUT -p udp --dport 1194 -j ACCEPT 2>/dev/null || \
+iptables -A INPUT -p udp --dport 1194 -j ACCEPT
+
+# Remove any existing OpenVPN forward rules to avoid duplicates
+iptables -D FORWARD -i tun0 -o "$NET_IF" -j ACCEPT 2>/dev/null || true
+iptables -D FORWARD -i "$NET_IF" -o tun0 -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null || true
+
+# Insert FORWARD rules at the beginning to take precedence over any REJECT rules
+iptables -I FORWARD 1 -i "$NET_IF" -o tun0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -I FORWARD 1 -i tun0 -o "$NET_IF" -j ACCEPT
+
+# Configure NAT for VPN subnet
 iptables -t nat -C POSTROUTING -s 10.8.0.0/24 -o "$NET_IF" -j MASQUERADE 2>/dev/null || \
 iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o "$NET_IF" -j MASQUERADE
+
+# Save iptables rules
 iptables-save > /etc/sysconfig/iptables
+
+echo "[INFO] iptables rules configured and saved"
 
 # --- Enable IP forwarding ---
 SYSCTL_CONF="/etc/sysctl.conf"
@@ -294,7 +315,7 @@ if ! grep -q "^net.ipv4.ip_forward *= *1" "$SYSCTL_CONF"; then
     echo "net.ipv4.ip_forward = 1" >> "$SYSCTL_CONF"
 fi
 
-sysctl -p >/dev/null
+sysctl -w net.ipv4.ip_forward=1 >/dev/null
 
 # --- Enable and start OpenVPN ---
 systemctl enable openvpn-server@server.service
@@ -309,6 +330,13 @@ if systemctl is-active --quiet openvpn-server@server.service; then
     echo ""
     echo "To generate additional client certificates, run:"
     echo "  bash $0 <new_client_name>"
+    echo ""
+    echo "Testing server connectivity..."
+    if ping -c1 8.8.8.8 >/dev/null 2>&1; then
+        echo "[OK] Server can reach internet"
+    else
+        echo "[WARNING] Server cannot reach internet - check network configuration"
+    fi
 else
     echo "[ERROR] OpenVPN server failed to start. Check 'systemctl status openvpn-server@server.service' for details."
     exit 1
