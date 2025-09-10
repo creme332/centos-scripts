@@ -20,7 +20,7 @@ install_packages() {
     fi
     
     # Install OpenVPN and utilities
-    yum install -y openvpn curl traceroute bind-utils
+    yum install -y openvpn curl traceroute bind-utils openssh-clients
     
     echo "[OK] Packages installed"
 }
@@ -46,6 +46,10 @@ fi
 
 # Install packages
 install_packages
+
+# Download the verification script and give permission
+curl -o /usr/local/bin/vpn-verify https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/vpn-verify
+chmod +x /usr/local/bin/vpn-verify
 
 echo "[SUCCESS] OpenVPN client setup complete"
 echo "[INFO] To connect to VPN, use: openvpn --config ~/client.ovpn"

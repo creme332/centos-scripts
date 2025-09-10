@@ -26,28 +26,19 @@
    ```bash
    curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/server.sh | bash -s client
    ```
-1. Run:
-   ```bash
-   gedit /etc/openvpn/clients/client.ovpn
-   ```
-   and copy its contents to your clipboard with <kbd>CTRL + A</kbd> & <kbd>CTRL + C</kbd>.
+2. Determine the server's IP address using `ifconfig ens33`.
 
 ### Client VM
 
 1. Run:
    ```bash
-   gedit ~/client.ovpn
+   scp root@<SERVER_IP>:/etc/openvpn/clients/client.ovpn ~/client.ovpn
    ```
-   Paste the copied content from server, then save and exit.
+   where you need to replace `<SERVER_IP>` with the IP address of the server. You will prompted for the **server**'s root password.
 
 2. Run setup script:
    ```bash
    curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/client.sh | bash -s ~/client.ovpn
-   ```
-3. Download the verification script:
-   ```bash
-   curl -o /usr/local/bin/vpn-verify https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/vpn-verify
-   chmod +x /usr/local/bin/vpn-verify
    ```
 
 ## Usage
