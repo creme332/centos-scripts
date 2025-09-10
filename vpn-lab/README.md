@@ -15,8 +15,8 @@
 
 - 2 VMs: 1 server, 1 client
 - Root privileges and internet connectivity
-- Bridge networking mode enabled on both VMs
-- Client can ping server
+- NAT mode enabled on both VMs (other modes may work but have not been tested)
+- Client must be able to ping server
 
 ## Installation
 
@@ -53,7 +53,7 @@
 ## Usage
 
 1. On both client and server VMs, ensure you have root access and internet connectivity.
-2. On server VM, run `systemctl status openvpn-server@server.service` to check if VPN service is running.
+2. On server VM, run `systemctl status openvpn-server@server` to check if VPN service is running.
 3. On client VM, connect to the VPN:
    ```bash
    openvpn --config ~/client.ovpn
