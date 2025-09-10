@@ -26,7 +26,7 @@ If you obtained packet timeouts, then you need to use the Bridge networking mode
 
 ![alt text](img/vmware-network.png)
 
-Finally, repeat the above steps to verify that your VM is accessible from Windows.
+Finally, restart the VM (shut down with `init 0`), check the new IP address with `ifconfig` and repeat the above steps to verify that your VM is accessible from Windows.
 
 ## Basic Setup
 
