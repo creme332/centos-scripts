@@ -52,4 +52,3 @@ curl -o /usr/local/bin/vpn-verify https://raw.githubusercontent.com/creme332/cen
 chmod +x /usr/local/bin/vpn-verify
 
 echo "[SUCCESS] OpenVPN client setup complete"
-echo "[INFO] To connect to VPN, use: openvpn --config ~/client.ovpn"

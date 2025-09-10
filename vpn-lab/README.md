@@ -30,16 +30,15 @@
 
 ### Client VM
 
-1. Run:
+1. Run setup script:
+   ```bash
+   curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/client.sh | sh
+   ```
+2. Run:
    ```bash
    scp root@<SERVER_IP>:/etc/openvpn/clients/client.ovpn ~/client.ovpn
    ```
    where you need to replace `<SERVER_IP>` with the IP address of the server. You will prompted for the **server**'s root password.
-
-2. Run setup script:
-   ```bash
-   curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/client.sh | bash -s ~/client.ovpn
-   ```
 
 ## Usage
 
