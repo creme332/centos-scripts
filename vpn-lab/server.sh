@@ -265,9 +265,10 @@ fi
 generate_client_config "$CLIENT_NAME"
 
 # --- Firewall / Routing ---
-systemctl mask firewalld || true
-systemctl enable iptables
 systemctl stop firewalld || true
+systemctl disable firewalld || true
+systemctl enable iptables
+iptables -F
 systemctl start iptables
 
 # --- Detect interface automatically using route ---
@@ -318,11 +319,11 @@ fi
 sysctl -w net.ipv4.ip_forward=1 >/dev/null
 
 # --- Enable and start OpenVPN ---
-systemctl enable openvpn-server@server.service
-systemctl restart openvpn-server@server.service
+systemctl enable openvpn-server@server
+systemctl restart openvpn-server@server
 
 # --- Check if properly started ---
-if systemctl is-active --quiet openvpn-server@server.service; then
+if systemctl is-active --quiet openvpn-server@server; then
     echo "[SUCCESS] OpenVPN server setup complete."
     echo "[INFO] Client configuration file created: /etc/openvpn/clients/${CLIENT_NAME}.ovpn"
     echo "[INFO] Server IP used in client config: $SERVER_IP"
@@ -338,6 +339,6 @@ if systemctl is-active --quiet openvpn-server@server.service; then
         echo "[WARNING] Server cannot reach internet - check network configuration"
     fi
 else
-    echo "[ERROR] OpenVPN server failed to start. Check 'systemctl status openvpn-server@server.service' for details."
+    echo "[ERROR] OpenVPN server failed to start. Check 'systemctl status openvpn-server@server' for details."
     exit 1
 fi
