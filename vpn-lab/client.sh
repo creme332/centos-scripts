@@ -48,4 +48,4 @@ fi
 install_packages
 
 echo "[SUCCESS] OpenVPN client setup complete"
-echo "[INFO] To connect to VPN, use: openvpn --config /path/to/your/config.ovpn"
+echo "[INFO] To connect to VPN, use: openvpn --config ~/client.ovpn"
