@@ -48,8 +48,8 @@
    ```bash
    openvpn --config ~/client.ovpn
    ```
-   Note: This command runs in the foreground and will continue running while connected to the VPN.
-4. On client VM, open another terminal and run:
+   Note: This command runs in the foreground and **will continue running while connected to the VPN**.
+4. On client VM, open **another** terminal and run:
    ```bash
    vpn-verify
    ```
@@ -62,7 +62,7 @@
    - Final status: `VPN Status: WORKING CORRECTLY`
 
 > [!NOTE]
-> The server should start OpenVPN service **automatically** on reboot. If you need to manually restart it, use `systemctl restart openvpn-server@server.service`.
+> The server should start OpenVPN service **automatically** on reboot. If you need to manually restart it, use `systemctl restart openvpn-server@server`.
 
 ## Verification
 
@@ -75,14 +75,13 @@
 | TC-05        | Ping OpenVPN server's VPN IP from client                                  | `ping 10.8.0.1` successful from client                    |
 | TC-06        | Ping OpenVPN client's VPN IP from server                                  | `ping 10.8.0.6` successful from server (IP may vary)      |
 | TC-07        | Verify encrypted traffic on server WAN interface                          | `tcpdump -i ens33 udp port 1194` shows encrypted packets  |
-| TC-08        | Restart OpenVPN service on server                                         | `systemctl restart openvpn-server@server` works           |
-| TC-09        | Reboot server, then connect from client                                   | Client reconnects successfully after server reboot        |
+| TC-08        | Reboot server, then connect from client                                   | Client reconnects successfully after server reboot        |
 
 ## Commands for Manual Testing
 
 ```bash
 # Check server status
-sudo systemctl status openvpn-server@server
+systemctl status openvpn-server@server
 
 # Check VPN interfaces
 ip addr show tun0
@@ -91,11 +90,7 @@ ip addr show tun0
 traceroute 8.8.8.8
 
 # Monitor VPN traffic (on server)
-sudo tcpdump -i ens33 udp port 1194
-
-# Check VPN logs
-sudo journalctl -u openvpn-server@server -f  # Server logs
-sudo journalctl -f | grep openvpn            # Client logs
+tcpdump -i ens33 udp port 1194
 ```
 
 ## Uninstallation
