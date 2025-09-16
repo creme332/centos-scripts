@@ -187,5 +187,5 @@ if [[ "${VPN_WORKING:-false}" == "false" ]]; then
 fi
 
 echo ""
-echo "To connect: openvpn --config /path/to/your/config.ovpn"
+echo "To connect: openvpn --config ~/client.ovpn"
 echo "To disconnect: Kill the openvpn process or press Ctrl+C"
