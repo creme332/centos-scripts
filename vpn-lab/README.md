@@ -9,6 +9,9 @@
   - [Verification](#verification)
   - [Commands for Manual Testing](#commands-for-manual-testing)
   - [Uninstallation](#uninstallation)
+  - [Extra: VPN Client Management via GUI](#extra-vpn-client-management-via-gui)
+    - [Installation](#installation-1)
+    - [Usage](#usage-1)
 
 
 ## Prerequisites
@@ -108,3 +111,30 @@ curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/mai
 # Reset client
 curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/reset-client.sh | bash
 ```
+
+## Extra: VPN Client Management via GUI
+
+![alt text](ui/home-screenshot.png)
+
+### Installation
+
+Run the following commands on VPN server:
+
+```bash
+# Install python
+curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/helper/yum.sh | sh
+yum install rh-python38 -y
+
+# Install scripts
+cd ~
+wget https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/server.sh
+wget https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/ui/server.py
+```
+
+### Usage
+
+On server VM:
+
+1. Enable Python 3.8: `scl enable rh-python38 bash`.
+2. Launch UI server: `python ~/server.py`.
+3. Open `localhost:8080` in your browser.
