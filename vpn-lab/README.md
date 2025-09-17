@@ -14,9 +14,11 @@
 ## Prerequisites
 
 - 2 VMs: 1 server, 1 client
-- Root privileges and internet connectivity
-- NAT mode enabled on both VMs (other modes may work but have not been tested)
-- Client must be able to ping server
+- Resolve EOL issues on both VMs if needed
+- Both VMs must have root privileges and internet connectivity
+- NAT mode enabled on both VMs (other network modes may work but are untested)
+- Client must be able to ping the server
+- **No existing OpenVPN or EasyRSA installations (these will conflict with the setup). If previously installed, run the uninstallation scripts first**
 
 ## Installation
 
@@ -26,6 +28,7 @@
    ```bash
    curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/server.sh | bash -s client
    ```
+   This will create a file `client.ovpn` for a VPN client named `client`.
 2. Determine the server's IP address using `ifconfig ens33`.
 
 ### Client VM
@@ -34,7 +37,7 @@
    ```bash
    curl -s https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/vpn-lab/client.sh | sh
    ```
-2. Run:
+2. To transfer the newly created ovpn file from server to client:
    ```bash
    scp root@<SERVER_IP>:/etc/openvpn/clients/client.ovpn ~/client.ovpn
    ```
