@@ -217,30 +217,20 @@ EOF
 
 echo "$DHCP_CONF configured with subnet $SUBNET and range $DHCP_RANGE_START-$DHCP_RANGE_END"
 
-# Step 5: Start DHCP service
-echo "Starting DHCP service..."
-systemctl enable dhcpd
-systemctl restart dhcpd
-
-# Wait up to 5 seconds for service to become active
-for i in {1..5}; do
-    if systemctl is-active --quiet dhcpd; then
-        echo "DHCP service started successfully."
-        break
-    else
-        sleep 1
-    fi
-done
-
-if ! systemctl is-active --quiet dhcpd; then
-    echo "Failed to start DHCP service."
-    systemctl status dhcpd --no-pager
+# Step 5: Validate DHCP configuration (don't enable or start service)
+echo "Validating DHCP configuration..."
+if dhcpd -t -cf /etc/dhcp/dhcpd.conf 2>/dev/null; then
+    echo "DHCP configuration is valid."
+else
+    echo "Error: DHCP configuration validation failed!"
+    dhcpd -t -cf /etc/dhcp/dhcpd.conf
     exit 1
 fi
 
 echo "DHCP Server setup complete."
-echo "Configuration Summary:"
+echo ""
+echo "=== Configuration Summary ==="
 echo "  Server IP: $STATIC_IP"
 echo "  DHCP Range: $DHCP_RANGE_START - $DHCP_RANGE_END"
 echo "  Gateway: $GATEWAY"
-echo "Check client IP allocation using ifconfig on the client."
+echo "  Subnet: $SUBNET/$NETMASK"
