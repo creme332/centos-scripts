@@ -48,7 +48,7 @@ bash ~/client.sh
 ## Usage
 
 1. On server VM:
-   1. Start DHCP server: `systemctl status dhcpd`.
+   1. Start DHCP server: `systemctl start dhcpd`.
    2. Ensure that server was properly started: `systemctl status dhcpd`.
 2. On client VM:
    1. Request IP from DHCP server: `systemctl restart network`.
@@ -69,6 +69,7 @@ bash ~/client.sh
 - Check logs: `journalctl -u dhcpd -n 20`
 - Verify interface: `ip addr show`
 - Check config: `dhcpd -t -cf /etc/dhcp/dhcpd.conf`
+- Show active leases: `grep -A 10 "binding state active" /var/lib/dhcp/dhcpd.leases`
 
 **Client Issues:**
 - Force DHCP renewal: `dhclient -r && dhclient`
