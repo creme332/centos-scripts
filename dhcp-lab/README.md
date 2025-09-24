@@ -17,21 +17,18 @@ curl -o ~/uninstall-server.sh https://raw.githubusercontent.com/creme332/centos-
 Then, run the installation script as follows:
 
 ```bash
-bash ~/server.sh [SERVER_IP] [RANGE_START] [RANGE_END] [NETMASK] [GATEWAY]
+bash ~/server.sh [RANGE_START] [RANGE_END] [NETMASK] [GATEWAY]
 
-# Example
-bash ~/server.sh 200.100.50.99 200.100.50.1.100 200.100.50.25 200.100.50.0 255.255.255.0
+# Examples
+# a)
+bash ~/server.sh 175.200.225.1 175.200.225.25 255.255.192.0 175.200.225.1
+
+# b)
+bash ~/server.sh 125.150.175.100 125.150.175.125 255.248.0.0 125.150.175.100
+
+# c)
+bash ~/server.sh 200.205.210.50 200.205.210.75 255.255.225.128 200.205.210.50
 ```
-
-where `[SERVER_IP]`, `[RANGE_START]`, `[RANGE_END]`, `[SUBNET]`, and `[NETMASK]` are **placeholders that you must substitute with IP addresses**.
-
-| Parameter     | Description                                            | Example       |
-| ------------- | ------------------------------------------------------ | ------------- |
-| `SERVER_IP`   | Static IP for DHCP server (must be outside DHCP range) | 192.168.1.99  |
-| `RANGE_START` | First IP address in the DHCP pool                      | 192.168.1.100 |
-| `RANGE_END`   | Last IP address in the DHCP pool                       | 192.168.1.150 |
-| `NETMASK`     | Subnet mask for the network                            | 255.255.255.0 |
-| `GATEWAY`     | Default gateway IP                                     | 192.168.1.1   |
 
 ---
 

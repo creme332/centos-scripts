@@ -15,10 +15,8 @@
 # - CentOS 7.9.2009 with root privileges
 # - Internet connectivity for package installation and updates
 # - VMware or physical machine (not WSL2) with at least one network interface
-# - All 5 parameters must be provided (no defaults)
 #------------------------------------------------------------------------------------
 # Parameters:
-# SERVER_IP   : Static IP for DHCP server (must be outside DHCP range)
 # RANGE_START : First IP address in the DHCP pool
 # RANGE_END   : Last IP address in the DHCP pool  
 # NETMASK     : Subnet mask for the network
@@ -54,21 +52,15 @@ DATE_SUFFIX=$(date +%F-%T)
 
 # Function to display usage
 usage() {
-    echo "Usage: $0 SERVER_IP RANGE_START RANGE_END NETMASK GATEWAY"
+    echo "Usage: $0 RANGE_START RANGE_END NETMASK GATEWAY"
     echo ""
     echo "All parameters are REQUIRED:"
-    echo "  SERVER_IP   : Static IP for DHCP server"
     echo "  RANGE_START : Start of DHCP range"
     echo "  RANGE_END   : End of DHCP range"
     echo "  NETMASK     : Subnet mask"
     echo "  GATEWAY     : Gateway IP"
     echo ""
-    echo "Note: SUBNET is automatically calculated using SERVER_IP & NETMASK"
-    echo ""
-    echo "Examples:"
-    echo "  $0 192.168.1.10 192.168.1.100 192.168.1.200 255.255.255.0 192.168.1.1"
-    echo "  $0 125.150.175.99 125.150.175.100 125.150.175.125 255.248.0.0 175.200.225.1"
-    echo "  $0 10.0.0.10 10.0.0.50 10.0.0.100 255.255.255.0 10.0.0.1"
+    echo "Note: Server IP and SUBNET are automatically determined."
     exit 1
 }
 
@@ -78,19 +70,19 @@ if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
 fi
 
 # Check if all required parameters are provided
-if [ $# -ne 5 ]; then
-    echo "Error: All 5 parameters are required!"
+if [ $# -ne 4 ]; then
+    echo "Error: All 4 parameters are required!"
     echo "Provided: $# parameters"
     echo ""
     usage
 fi
 
 # Parse command line parameters (all required, no defaults)
-STATIC_IP="$1"
-DHCP_RANGE_START="$2"
-DHCP_RANGE_END="$3"
-NETMASK="$4"
-GATEWAY="$5"
+DHCP_RANGE_START="$1"
+DHCP_RANGE_END="$2"
+NETMASK="$3"
+GATEWAY="$4"
+STATIC_IP="$GATEWAY"
 
 # Function to calculate subnet using bitwise AND
 calculate_subnet() {
