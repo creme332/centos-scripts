@@ -348,6 +348,7 @@ else
 fi
 
 echo "DHCP Server setup complete."
+echo "Backups are found in ~/dhcp-backup"
 echo ""
 echo "=== Configuration Summary ==="
 echo "  Server IP: $STATIC_IP"
