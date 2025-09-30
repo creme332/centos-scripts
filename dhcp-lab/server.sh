@@ -173,7 +173,7 @@ validate_netmask() {
     
     # Check that all 1s come before all 0s (valid subnet mask pattern)
     if [[ ! $binary =~ ^1*0*$ ]]; then
-        echo "Error: Invalid subnet mask format: $mask"
+        echo "Error: Invalid subnet mask format: $mask ($binary)"
         echo "Subnet mask must have contiguous 1s followed by contiguous 0s"
         exit 1
     fi
