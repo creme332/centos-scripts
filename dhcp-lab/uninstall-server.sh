@@ -5,35 +5,17 @@
 # Description: Removes DHCP server and restores original 
 #              network configuration from backups. Completely
 #              resets all DHCP-related configurations.
-# Usage: Run the script as root using bash uninstall-server.sh [--force]
-# Version: 0.2
+# Usage: Run the script as root using bash uninstall-server.sh
+# Version: 0.3
 # Author: creme332
 #--------------------------------------------------------------
 
 set -euo pipefail
 
-# Parse command line options
-FORCE_MODE=false
-if [[ "${1:-}" == "--force" ]] || [[ "${1:-}" == "-f" ]]; then
-    FORCE_MODE=true
-    echo "Force mode enabled - will proceed without prompts"
-fi
-
 # Root check
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root. Exiting."
     exit 1
-fi
-
-# Confirmation prompt unless in force mode
-if [[ "$FORCE_MODE" == false ]]; then
-    echo "This will completely remove the DHCP server and reset network configuration."
-    echo "Are you sure you want to continue? (y/N)"
-    read -r response
-    if [[ ! "$response" =~ ^[Yy]$ ]]; then
-        echo "Uninstallation cancelled."
-        exit 0
-    fi
 fi
 
 echo "Starting DHCP Server uninstallation..."
@@ -57,7 +39,7 @@ echo "Detected primary network interface: $PRIMARY_IF"
 
 # Step 4: Restore network interface configuration
 IFCFG_FILE="/etc/sysconfig/network-scripts/ifcfg-${PRIMARY_IF}"
-BACKUP_FILE=$(find /etc/sysconfig/network-scripts/ -name "ifcfg-${PRIMARY_IF}.backup.*" | sort -r | head -n1)
+BACKUP_FILE=$(find ~/dhcp-backup/ -name "ifcfg-${PRIMARY_IF}.backup.*" | sort -r | head -n1)
 
 if [ -n "$BACKUP_FILE" ] && [ -f "$BACKUP_FILE" ]; then
     echo "Restoring network interface configuration from $BACKUP_FILE"
@@ -75,7 +57,7 @@ fi
 
 # Step 5: Restore DHCP sysconfig
 DHCPD_FILE="/etc/sysconfig/dhcpd"
-BACKUP_DHCPD=$(find /etc/sysconfig/ -name "dhcpd.backup.*" 2>/dev/null | sort -r | head -n1)
+BACKUP_DHCPD=$(find ~/dhcp-backup/ -name "dhcpd.backup.*" 2>/dev/null | sort -r | head -n1)
 
 if [ -n "$BACKUP_DHCPD" ] && [ -f "$BACKUP_DHCPD" ]; then
     echo "Restoring DHCP sysconfig from $BACKUP_DHCPD"
@@ -112,12 +94,6 @@ if command -v iptables >/dev/null 2>&1; then
     iptables -D INPUT -p udp --dport 68 -j ACCEPT 2>/dev/null || true
     echo "iptables DHCP rules removed"
 fi
-
-# Step 7: Clean up backup files (optional - uncomment if desired)
-# echo "Cleaning up backup files..."
-# find /etc/sysconfig/network-scripts/ -name "ifcfg-*.backup.*" -delete
-# find /etc/sysconfig/ -name "dhcpd.backup.*" -delete
-# find /etc/dhcp/ -name "dhcpd.conf.backup.*" -delete
 
 # Step 8: Reset network configuration to DHCP if no backup exists
 if [[ ! -f "$IFCFG_FILE" ]] || ! grep -q "IPADDR" "$IFCFG_FILE" 2>/dev/null; then
@@ -172,7 +148,3 @@ else
     echo "Current network status: $PRIMARY_IF has no IP assigned"
 fi
 echo ""
-echo "Note: Backup files have been preserved for safety."
-echo "You can manually remove them from:"
-echo "  - /etc/sysconfig/network-scripts/*.backup.*"
-echo "  - /etc/sysconfig/dhcpd.backup.*"
