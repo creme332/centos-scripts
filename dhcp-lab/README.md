@@ -4,6 +4,10 @@
 
 - 2 VMs: 1 server, 1 client.
 - Both VMs should be running CentOS 7, connected to the internet, and accessible with root privileges.
+- **Both VMs should in NAT networking mode**.
+
+> [!IMPORTANT]
+> Both VMs should be in the NAT networking mode.
 
 ## Installation
 
@@ -27,7 +31,7 @@ bash ~/server.sh 175.200.225.1 175.200.225.25 255.255.192.0 175.200.225.1
 bash ~/server.sh 125.150.175.100 125.150.175.125 255.248.0.0 125.150.175.100
 
 # c)
-bash ~/server.sh 200.205.210.50 200.205.210.75 255.255.225.128 200.205.210.50
+bash ~/server.sh 200.205.210.50 200.205.210.75 255.255.255.128 200.205.210.50
 ```
 
 ---
@@ -47,11 +51,12 @@ bash ~/client.sh
 
 ## Usage
 
-1. On server VM:
+1. Run a Powershell on Windows with **administrative rights** and run `net stop vmnetdhcp`.
+2. On server VM:
    1. Start DHCP server: `systemctl start dhcpd`.
    2. Ensure that server was properly started: `systemctl status dhcpd`.
-2. On client VM:
-   1. Request IP from DHCP server: `systemctl restart network`.
+3. On client VM:
+   1. Request IP from DHCP server: `dhclient -r ens33 && dhclient -v ens33`.
    2. Check that the IP is within the DHCP range: `ifconfig ens33`.
 
 ## Verification
