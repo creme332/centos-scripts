@@ -51,7 +51,7 @@ bash ~/client.sh
 
 ## Usage
 
-1. Run a Powershell on Windows with **administrative rights** and run `net stop vmnetdhcp`.
+1. Open Powershell on Windows with **administrative rights** and run `net stop vmnetdhcp`.
 2. On server VM:
    1. Start DHCP server: `systemctl start dhcpd`.
    2. Ensure that server was properly started: `systemctl status dhcpd`.
@@ -86,8 +86,8 @@ bash ~/client.sh
 
 ```sh
 # Server
-bash ~/uninstall-server.sh --force
+bash ~/uninstall-server.sh
 
 # Client
-bash ~/uninstall-client.sh --force
+bash ~/uninstall-client.sh
 ```

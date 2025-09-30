@@ -5,35 +5,17 @@
 # Description: Restores original network configuration from 
 #              backups and removes DHCP client configuration.
 #              Completely resets all DHCP client settings.
-# Usage: Run the script as root using bash uninstall-client.sh [--force]
+# Usage: Run the script as root using bash uninstall-client.sh
 # Version: 0.0
 # Author: creme332
 #--------------------------------------------------------------
 
 set -euo pipefail
 
-# Parse command line options
-FORCE_MODE=false
-if [[ "${1:-}" == "--force" ]] || [[ "${1:-}" == "-f" ]]; then
-    FORCE_MODE=true
-    echo "Force mode enabled - will proceed without prompts"
-fi
-
 # Root check
 if [[ $EUID -ne 0 ]]; then
     echo "This script must be run as root. Exiting."
     exit 1
-fi
-
-# Confirmation prompt unless in force mode
-if [[ "$FORCE_MODE" == false ]]; then
-    echo "This will reset DHCP client configuration and restore network settings."
-    echo "Are you sure you want to continue? (y/N)"
-    read -r response
-    if [[ ! "$response" =~ ^[Yy]$ ]]; then
-        echo "Uninstallation cancelled."
-        exit 0
-    fi
 fi
 
 echo "Starting DHCP Client uninstallation..."
