@@ -230,10 +230,11 @@ echo ""
 # Function to create backups
 backup_file() {
     local file="$1"
+    mkdir -p ~/dhcp-backup
     if [ -f "$file" ]; then
         local backup="${file}.backup.${DATE_SUFFIX}"
-        cp -p "$file" "$backup"
-        echo "Backup of $file saved as $backup"
+        cp -p "$file" "~/dhcp-backup/$backup"
+        echo "Backup of $file saved as ~/dhcp-backup/$backup"
     else
         echo "Warning: $file does not exist, cannot create backup"
         return 1
