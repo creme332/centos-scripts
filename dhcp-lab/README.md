@@ -59,29 +59,6 @@ bash ~/client.sh
    1. Request IP from DHCP server: `dhclient -r ens33 && dhclient -v ens33`.
    2. Check that the IP is within the DHCP range: `ifconfig ens33`.
 
-## Verification
-
-| Test Case ID | Description                             | Expected Result                                                                                                                                   |
-| ------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TC01         | Verify DHCP service is active on server | `systemctl is-active dhcpd` returns `active`                                                                                                      |
-| TC02         | Client interface has valid IP           | `ifconfig ens33` shows IP in DHCP range                                                                                                           |
-| TC03         | Connectivity test                       | Client can `ping <server-ip>` successfully                                                                                                        |
-| TC04         | Verify persistence after reboot         | After rebooting both server and client VMs, and following usage instructions, client automatically gets configured IP without manual intervention |
-
-## Troubleshooting
-
-**Server Issues:**
-- Check logs: `journalctl -u dhcpd -n 20`
-- Verify interface: `ip addr show`
-- Check config: `dhcpd -t -cf /etc/dhcp/dhcpd.conf`
-- Show active leases: `grep -A 10 "binding state active" /var/lib/dhcp/dhcpd.leases`
-
-**Client Issues:**
-- Force DHCP renewal: `dhclient -r && dhclient`
-- Check network config: `cat /etc/sysconfig/network-scripts/ifcfg-ens33`
-- Check DHCP lease file: `/var/lib/dhclient/dhclient-<interface>.lease`
-- View DHCP logs: `journalctl -u network -n 20`
-
 ## Uninstallation
 
 ```sh
