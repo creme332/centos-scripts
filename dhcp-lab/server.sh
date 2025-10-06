@@ -8,7 +8,7 @@
 #              setup, dhcpd.conf creation, and validation.
 #              All parameters are required - no defaults.
 # Usage: bash server.sh SERVER_IP RANGE_START RANGE_END NETMASK GATEWAY
-# Version: 1.0
+# Version: 1.1
 # Author: creme332
 #------------------------------------------------------------------------------------
 # Requirements:
@@ -230,11 +230,15 @@ echo ""
 # Function to create backups
 backup_file() {
     local file="$1"
-    mkdir -p ~/dhcp-backup
+    local backup_dir="$HOME/dhcp-backup"
+    mkdir -p "$backup_dir"
+    
     if [ -f "$file" ]; then
-        local backup="${file}.backup.${DATE_SUFFIX}"
-        cp -p "$file" "~/dhcp-backup/$backup"
-        echo "Backup of $file saved as ~/dhcp-backup/$backup"
+        # Get just the filename, replacing / with _ to flatten the path
+        local filename=$(echo "$file" | sed 's|/|_|g')
+        local backup="${backup_dir}/${filename}.backup.${DATE_SUFFIX}"
+        cp -p "$file" "$backup"
+        echo "Backup of $file saved as $backup"
     else
         echo "Warning: $file does not exist, cannot create backup"
         return 1
