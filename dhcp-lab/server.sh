@@ -8,7 +8,7 @@
 #              setup, dhcpd.conf creation, and validation.
 #              All parameters are required - no defaults.
 # Usage: bash server.sh SERVER_IP RANGE_START RANGE_END NETMASK GATEWAY
-# Version: 1.1
+# Version: 1.2
 # Author: creme332
 #------------------------------------------------------------------------------------
 # Requirements:
@@ -27,7 +27,8 @@
 set -euo pipefail
 
 # Check if YUM is working
-if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+if timeout 10 yum repolist enabled >/dev/null 2>&1 && \
+   timeout 10 yum makecache fast >/dev/null 2>&1; then
     echo "YUM OK"
 else
     echo "YUM is not setup properly. Run yum.sh. Exiting."

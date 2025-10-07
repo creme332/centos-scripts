@@ -4,7 +4,7 @@
 # Script Name: OpenVPN Client Setup for CentOS 7
 # Description: Minimal setup - installs packages only
 # Usage: bash client.sh
-# Version: 1.0
+# Version: 1.1
 # Author: creme332
 #--------------------------------------------------------------
 
@@ -34,8 +34,11 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # System checks
-if ! yum repolist enabled >/dev/null 2>&1; then
-    echo "[ERROR] YUM not working"
+if timeout 10 yum repolist enabled >/dev/null 2>&1 && \
+   timeout 10 yum makecache fast >/dev/null 2>&1; then
+    echo "YUM OK"
+else
+    echo "YUM is not setup properly. Run yum.sh. Exiting."
     exit 1
 fi
 

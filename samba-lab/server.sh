@@ -6,7 +6,7 @@
 #              anonymous and secure shares, firewall rules, and
 #              SELinux context adjustments. Designed to be idempotent,
 #              so it can be run multiple times safely.
-# Version: 0.1
+# Version: 0.2
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -37,7 +37,8 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # --- YUM check ---
-if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+if timeout 10 yum repolist enabled >/dev/null 2>&1 && \
+   timeout 10 yum makecache fast >/dev/null 2>&1; then
     echo "YUM OK"
 else
     echo "YUM is not setup properly. Run yum.sh. Exiting."

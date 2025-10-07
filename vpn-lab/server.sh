@@ -10,7 +10,7 @@
 #              client configuration files.
 #              Idempotent and safe to re-run multiple times.
 # Usage: Run the script as root using bash server.sh [client_name]
-# Version: 0.6
+# Version: 0.7
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -132,10 +132,11 @@ fi
 echo "[INFO] Setting up OpenVPN server with client: $CLIENT_NAME"
 
 # --- YUM check ---
-if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
-    echo "[OK] YUM configured"
+if timeout 10 yum repolist enabled >/dev/null 2>&1 && \
+   timeout 10 yum makecache fast >/dev/null 2>&1; then
+    echo "YUM OK"
 else
-    echo "[ERROR] YUM not configured. Exiting."
+    echo "YUM is not setup properly. Run yum.sh. Exiting."
     exit 1
 fi
 

@@ -4,7 +4,7 @@
 # Script Name: Setup Mail Server on CentOS 7
 # Description: Automates the installation and configuration of  
 #              a mail server using Postfix and Dovecot on CentOS 7.
-# Version: 0.2
+# Version: 0.3
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -39,7 +39,8 @@ else
 fi
 
 # Check if YUM is working
-if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+if timeout 10 yum repolist enabled >/dev/null 2>&1 && \
+   timeout 10 yum makecache fast >/dev/null 2>&1; then
     echo "YUM OK"
 else
     echo "YUM is not setup properly. Run yum.sh. Exiting."

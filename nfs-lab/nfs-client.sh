@@ -5,7 +5,7 @@
 # Description: Installs and configures NFS client on a 
 #              CentOS 7.9 machine.
 # Usage: Run the script as root using bash nfs-client.sh
-# Version: 0.0
+# Version: 0.1
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -29,7 +29,8 @@ if [[ -z "$SERVER_IP" ]]; then
 fi
 
 # Check if YUM is working
-if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+if timeout 10 yum repolist enabled >/dev/null 2>&1 && \
+   timeout 10 yum makecache fast >/dev/null 2>&1; then
     echo "YUM OK"
 else
     echo "YUM is not setup properly. Run yum.sh. Exiting."

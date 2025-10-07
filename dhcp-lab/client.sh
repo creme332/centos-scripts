@@ -7,7 +7,7 @@
 #              detection, backup of existing configuration files, 
 #              and updates network scripts.
 # Usage: Run the script as root using bash dhcp-client.sh
-# Version: 0.0
+# Version: 0.1
 # Author: creme332
 #--------------------------------------------------------------
 # Requirements:
@@ -30,7 +30,8 @@ backup_file() {
 }
 
 # Check if YUM is working
-if yum repolist enabled >/dev/null 2>&1 && yum makecache fast >/dev/null 2>&1; then
+if timeout 10 yum repolist enabled >/dev/null 2>&1 && \
+   timeout 10 yum makecache fast >/dev/null 2>&1; then
     echo "YUM OK"
 else
     echo "YUM is not setup properly. Run yum.sh. Exiting."
