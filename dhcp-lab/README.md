@@ -5,6 +5,7 @@
 - 2 VMs: 1 server, 1 client.
 - Both VMs should be running CentOS 7, connected to the internet, and accessible with root privileges.
 - **Both VMs should in NAT networking mode**.
+- The EOL issue must be fixed on both VMs otherwise the package installation will fail.
 
 > [!IMPORTANT]
 > Both VMs should be in the NAT networking mode.
@@ -14,8 +15,8 @@
 On server VM, download the installation and uninstallation scripts:
 
 ```bash
-curl -o ~/server.sh https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/dhcp/dhcp-lab/server.sh
-curl -o ~/uninstall-server.sh https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/dhcp/dhcp-lab/uninstall-server.sh
+curl -o ~/server.sh https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/dhcp-lab/server.sh
+curl -o ~/uninstall-server.sh https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/dhcp-lab/uninstall-server.sh
 ```
 
 Then, run the installation script as follows:
@@ -39,8 +40,8 @@ bash ~/server.sh 200.205.210.50 200.205.210.75 255.255.255.128 200.205.210.50
 On client VM, download the installation and uninstallation scripts:
 
 ```bash
-curl -o ~/client.sh https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/dhcp/dhcp-lab/client.sh
-curl -o ~/uninstall-client.sh https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/dhcp/dhcp-lab/uninstall-client.sh
+curl -o ~/client.sh https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/dhcp-lab/client.sh
+curl -o ~/uninstall-client.sh https://raw.githubusercontent.com/creme332/centos-scripts/refs/heads/main/dhcp-lab/uninstall-client.sh
 ```
 
 then run the installation script:
@@ -59,7 +60,18 @@ bash ~/client.sh
    1. Request IP from DHCP server: `dhclient -r ens33 && dhclient -v ens33`.
    2. Check that the IP is within the DHCP range: `ifconfig ens33`.
 
+## Troubleshooting
+
+To fix the error `Failed to start dhcpd.service: Access denied` when executing `systemctl start dhcpd`, run:
+
+```bash
+setenforce 0
+systemctl daemon-reload
+```
+
 ## Uninstallation
+
+Run these commands to uninstall DHCP stuffs:
 
 ```sh
 # Server
